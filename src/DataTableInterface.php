@@ -210,6 +210,10 @@ interface DataTableInterface
 
     public function hasActiveFilters(): bool;
 
+    public function isRequestFromTurboFrame(): bool;
+
+    public function setIsRequestFromTurboFrame(bool $isRequestFromTurboFrame): self;
+
     public function handleRequest(mixed $request): void;
 
     public function createView(): DataTableView;

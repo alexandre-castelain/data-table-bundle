@@ -7,6 +7,7 @@ namespace Kreyu\Bundle\DataTableBundle;
 use Kreyu\Bundle\DataTableBundle\Exception\LogicException;
 use Kreyu\Bundle\DataTableBundle\Type\DataTableType;
 use Kreyu\Bundle\DataTableBundle\Type\DataTableTypeInterface;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\Service\Attribute\Required;
 
 trait DataTableFactoryAwareTrait
@@ -17,6 +18,15 @@ trait DataTableFactoryAwareTrait
     public function setDataTableFactory(?DataTableFactoryInterface $dataTableFactory): void
     {
         $this->dataTableFactory = $dataTableFactory;
+    }
+
+    abstract protected function render(string $view, array $parameters = [], ?Response $response = null): Response;
+
+    public function renderDataTableTurboFrameResponse(DataTableInterface $dataTable): Response
+    {
+        return $this->render('@KreyuDataTable/_streamed_data_table.html.twig', [
+            'data_table' => $dataTable->createView(),
+        ]);
     }
 
     /**

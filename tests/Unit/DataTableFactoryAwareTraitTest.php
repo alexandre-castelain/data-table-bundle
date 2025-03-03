@@ -11,6 +11,7 @@ use Kreyu\Bundle\DataTableBundle\Tests\Fixtures\DataTable\Type\SimpleDataTableTy
 use Kreyu\Bundle\DataTableBundle\Type\DataTableType;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpFoundation\Response;
 
 class DataTableFactoryAwareTraitTest extends TestCase
 {
@@ -76,6 +77,11 @@ class DataTableFactoryAwareTraitTest extends TestCase
     {
         $class = new class {
             use DataTableFactoryAwareTrait;
+
+            protected function render(string $view, array $parameters = [], ?Response $response = null): Response
+            {
+                return new Response();
+            }
 
             public function execute(string $method, array $arguments): void
             {

@@ -113,6 +113,8 @@ class DataTable implements DataTableInterface
 
     private bool $initialized = false;
 
+    private bool $isRequestFromTurboFrame = false;
+
     public function __construct(
         private ProxyQueryInterface $query,
         private /* readonly */ DataTableConfigInterface $config,
@@ -1014,5 +1016,17 @@ class DataTable implements DataTableInterface
         }
 
         return $provider->provide();
+    }
+
+    public function isRequestFromTurboFrame(): bool
+    {
+        return $this->isRequestFromTurboFrame;
+    }
+
+    public function setIsRequestFromTurboFrame(bool $isRequestFromTurboFrame): self
+    {
+        $this->isRequestFromTurboFrame = $isRequestFromTurboFrame;
+
+        return $this;
     }
 }

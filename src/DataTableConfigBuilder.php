@@ -30,6 +30,7 @@ class DataTableConfigBuilder implements DataTableConfigBuilderInterface
     private bool $filtrationEnabled = false;
     private bool $personalizationEnabled = false;
     private bool $exportingEnabled = false;
+    private bool $isAsynchronous = false;
 
     private bool $paginationPersistenceEnabled = false;
     private bool $sortingPersistenceEnabled = false;
@@ -835,6 +836,22 @@ class DataTableConfigBuilder implements DataTableConfigBuilderInterface
     public function getExportParameterName(): string
     {
         return $this->getParameterName(static::EXPORT_PARAMETER);
+    }
+
+    public function isAsynchronous(): bool
+    {
+        return $this->isAsynchronous;
+    }
+
+    public function setIsAsynchronous(bool $isAsynchronous): static
+    {
+        if ($this->locked) {
+            throw $this->createBuilderLockedException();
+        }
+
+        $this->isAsynchronous = $isAsynchronous;
+
+        return $this;
     }
 
     public function getDataTableConfig(): DataTableConfigInterface

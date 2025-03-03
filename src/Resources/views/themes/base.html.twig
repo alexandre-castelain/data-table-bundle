@@ -9,7 +9,8 @@
         {% set stimulus_controllers = stimulus_controllers|merge(['kreyu--data-table-bundle--batch']) %}
     {% endif %}
 
-    <turbo-frame id="kreyu_data_table_{{ name }}" target="_top">
+    <turbo-frame id="kreyu_data_table_{{ name }}" target="_top" {% if is_asynchronous %}src="{{ path('app_home_index') }}"{% endif %}>
+        {%- if not is_asynchronous -%}
         <div
             data-controller="{{ stimulus_controllers|join(' ') }}"
             data-kreyu--data-table-bundle--state-url-query-parameters-value="{{ url_query_parameters|default({})|json_encode(constant('JSON_FORCE_OBJECT')) }}"
@@ -21,6 +22,7 @@
                 {{ data_table_pagination(pagination) }}
             {% endif %}
         </div>
+        {%- endif -%}
     </turbo-frame>
 {% endblock %}
 

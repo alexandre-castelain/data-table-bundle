@@ -119,5 +119,7 @@ interface DataTableConfigBuilderInterface extends DataTableConfigInterface
 
     public function setValueRowAttributes(array $valueRowAttributes): static;
 
+    public function setIsAsynchronous(bool $isAsynchronous): static;
+
     public function getDataTableConfig(): DataTableConfigInterface;
 }
