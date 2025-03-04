@@ -7,6 +7,7 @@ namespace Kreyu\Bundle\DataTableBundle;
 use Kreyu\Bundle\DataTableBundle\Exception\LogicException;
 use Kreyu\Bundle\DataTableBundle\Type\DataTableType;
 use Kreyu\Bundle\DataTableBundle\Type\DataTableTypeInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\Service\Attribute\Required;
 
@@ -22,8 +23,10 @@ trait DataTableFactoryAwareTrait
 
     abstract protected function render(string $view, array $parameters = [], ?Response $response = null): Response;
 
-    public function renderDataTableTurboFrameResponse(DataTableInterface $dataTable): Response
+    public function renderDataTableTurboFrameResponse(DataTableInterface $dataTable, Request $request): Response
     {
+        $request->setRequestFormat('text/vnd.turbo-stream.html');
+
         return $this->render('@KreyuDataTable/_streamed_data_table.html.twig', [
             'data_table' => $dataTable->createView(),
         ]);
