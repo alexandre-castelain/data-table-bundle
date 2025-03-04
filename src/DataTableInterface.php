@@ -26,6 +26,7 @@ use Kreyu\Bundle\DataTableBundle\Personalization\PersonalizationData;
 use Kreyu\Bundle\DataTableBundle\Query\ProxyQueryInterface;
 use Kreyu\Bundle\DataTableBundle\Sorting\SortingData;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 interface DataTableInterface
 {
@@ -210,9 +211,7 @@ interface DataTableInterface
 
     public function hasActiveFilters(): bool;
 
-    public function isRequestFromTurboFrame(): bool;
-
-    public function setIsRequestFromTurboFrame(bool $isRequestFromTurboFrame): self;
+    public function isRequestFromTurboFrame(Request $request): bool;
 
     public function handleRequest(mixed $request): void;
 

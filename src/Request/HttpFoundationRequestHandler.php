@@ -32,9 +32,7 @@ class HttpFoundationRequestHandler implements RequestHandlerInterface
             throw new UnexpectedTypeException($request, Request::class);
         }
 
-        $this->handleTurboFrame($dataTable, $request);
-
-        if ($this->isTurboFrame($request) && !$dataTable->isRequestFromTurboFrame()) {
+        if ($this->isTurboFrame($request) && !$dataTable->isRequestFromTurboFrame($request)) {
             return;
         }
 
@@ -144,20 +142,5 @@ class HttpFoundationRequestHandler implements RequestHandlerInterface
     private function isTurboFrame(Request $request): bool
     {
         return $request->headers->has('Turbo-Frame');
-    }
-
-    private function handleTurboFrame(DataTableInterface $dataTable, Request $request): void
-    {
-        if (!$this->isTurboFrame($request)) {
-            return;
-        }
-
-        $turboFrameId = $request->headers->get('Turbo-Frame');
-
-        if ($turboFrameId !== 'kreyu_data_table_'.$dataTable->getName()) {
-            return;
-        }
-
-        $dataTable->setIsRequestFromTurboFrame(true);
     }
 }

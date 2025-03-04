@@ -41,6 +41,7 @@ use Kreyu\Bundle\DataTableBundle\Query\ProxyQueryInterface;
 use Kreyu\Bundle\DataTableBundle\Query\ResultSetInterface;
 use Kreyu\Bundle\DataTableBundle\Sorting\SortingData;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 class DataTable implements DataTableInterface
 {
@@ -112,8 +113,6 @@ class DataTable implements DataTableInterface
     private ?ResultSetInterface $resultSet = null;
 
     private bool $initialized = false;
-
-    private bool $isRequestFromTurboFrame = false;
 
     public function __construct(
         private ProxyQueryInterface $query,
@@ -1018,15 +1017,14 @@ class DataTable implements DataTableInterface
         return $provider->provide();
     }
 
-    public function isRequestFromTurboFrame(): bool
+    public function isRequestFromTurboFrame(Request $request): bool
     {
-        return $this->isRequestFromTurboFrame;
-    }
+        $turboFrameId = $request->headers->get('Turbo-Frame');
 
-    public function setIsRequestFromTurboFrame(bool $isRequestFromTurboFrame): self
-    {
-        $this->isRequestFromTurboFrame = $isRequestFromTurboFrame;
+        if (null === $turboFrameId) {
+            return false;
+        }
 
-        return $this;
+        return $turboFrameId === ('kreyu_data_table_'.$this->getName());
     }
 }
