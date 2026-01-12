@@ -77,7 +77,7 @@
 
             <select {% with { attr: select_attr } %}{{ block('attributes') }}{% endwith %}>
                 {% for column_visibility_group in data_table.columnVisibilityGroups %}
-                    <option value="{{ column_visibility_group.name }}" {% if column_visibility_group.isDefault %}selected{% endif %}>{{ column_visibility_group.label }}</option>
+                    <option value="{{ column_visibility_group.name }}" {% if column_visibility_group.isSelected %}selected{% endif %}>{{ column_visibility_group.label }}</option>
                 {% endfor %}
             </select>
         </form>

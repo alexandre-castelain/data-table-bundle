@@ -13,4 +13,8 @@ interface ColumnVisibilityGroupInterface
     public function isDefault(): bool;
 
     public function setIsDefault(bool $isDefault): self;
+
+    public function isSelected(): bool;
+
+    public function setIsSelected(bool $isSelected): self;
 }

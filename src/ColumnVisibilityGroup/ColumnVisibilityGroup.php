@@ -8,7 +8,8 @@ class ColumnVisibilityGroup implements ColumnVisibilityGroupInterface
 {
     private string $name;
     private string $label;
-    private bool $isDefault;
+    private bool $isDefault = false;
+    private bool $isSelected = false;
 
     public function __construct()
     {
@@ -47,6 +48,17 @@ class ColumnVisibilityGroup implements ColumnVisibilityGroupInterface
     {
         $this->isDefault = $isDefault;
 
+        return $this;
+    }
+
+    public function isSelected(): bool
+    {
+        return $this->isSelected;
+    }
+
+    public function setIsSelected(bool $isSelected): self
+    {
+        $this->isSelected = $isSelected;
         return $this;
     }
 }

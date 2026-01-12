@@ -148,15 +148,21 @@ class HttpFoundationRequestHandler implements RequestHandlerInterface
 
         $requestColumnVisibilityGroup = $this->extractQueryParameter($request, "[$parameterName]");
 
+        $mustBeDefault = false;
         if (null === $requestColumnVisibilityGroup) {
-            return;
+            $mustBeDefault = true;
         }
 
         // This also checks if the requested column visibility group exists
         foreach ($dataTable->getColumnVisibilityGroups() as $columnVisibilityGroup) {
-            $columnVisibilityGroup->setIsDefault(false);
-            if ($columnVisibilityGroup->getName() === $requestColumnVisibilityGroup) {
-                $columnVisibilityGroup->setIsDefault(true);
+            if (
+                ($mustBeDefault && $columnVisibilityGroup->isDefault())
+                || $columnVisibilityGroup->getName() === $requestColumnVisibilityGroup
+            ) {
+                $columnVisibilityGroup->setIsSelected(true);
+                if ($mustBeDefault) {
+                    $requestColumnVisibilityGroup = $columnVisibilityGroup->getName();
+                }
                 $dataTable->setRequestedColumnVisibilityGroup($requestColumnVisibilityGroup);
             }
         }
