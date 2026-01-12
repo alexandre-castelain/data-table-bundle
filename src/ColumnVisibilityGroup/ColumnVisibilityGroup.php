@@ -59,6 +59,7 @@ class ColumnVisibilityGroup implements ColumnVisibilityGroupInterface
     public function setIsSelected(bool $isSelected): self
     {
         $this->isSelected = $isSelected;
+
         return $this;
     }
 }
