@@ -9,6 +9,10 @@
         {% set stimulus_controllers = stimulus_controllers|merge(['kreyu--data-table-bundle--batch']) %}
     {% endif %}
 
+    {% if has_column_filters %}
+        {% set stimulus_controllers = stimulus_controllers|merge(['kreyu--data-table-bundle--column-filter']) %}
+    {% endif %}
+
     <turbo-frame id="kreyu_data_table_{{ name }}" target="_top">
         <div
             data-controller="{{ stimulus_controllers|join(' ') }}"
@@ -372,7 +376,7 @@
     {% set form = data_table.vars.column_filtration_form|default(null) %}
     {% if form %}
         {% form_theme form with form_themes|default([_self]) %}
-        {{ form_start(form, { attr: { 'data-turbo-action': 'advance', 'data-turbo-frame': '_self', 'hidden': 'hidden' } }) }}
+        {{ form_start(form, { attr: { 'data-turbo-action': 'advance', 'data-turbo-frame': '_self', 'hidden': 'hidden', 'data-kreyu--data-table-bundle--column-filter-target': 'form' } }) }}
         {{ form_end(form, { render_rest: false }) }}
 
         {% set data_table = form.vars.data_table_view %}
@@ -469,9 +473,9 @@
                 {% if attribute(column_form, filter_name, [], 'any', true, true) is defined %}
                     {% set child = attribute(column_form, filter_name) %}
                     {% if child.operator is defined %}
-                        {{ form_widget(child.operator) }}
+                        {{ form_widget(child.operator, { attr: {'data-action': 'change->kreyu--data-table-bundle--column-filter#queueSubmit'}}) }}
                     {% endif %}
-                    {{ form_widget(child.value, { attr: { form: column_form.vars.id, 'data-turbo-action': 'advance', 'data-turbo-frame': '_self', onchange: 'this.form.requestSubmit()' } }) }}
+                    {{ form_widget(child.value, { attr: { form: column_form.vars.id, 'data-action': 'input->kreyu--data-table-bundle--column-filter#queueSubmit', 'data-turbo-permanent': '' } }) }}
                 {% endif %}
             {% endif %}
         {% endif %}

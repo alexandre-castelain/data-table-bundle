@@ -130,6 +130,7 @@ final class DataTableType implements DataTableTypeInterface
         if ($dataTable->getConfig()->isFiltrationEnabled()) {
             $view->vars['filtration_form'] = $this->createFiltrationFormView($view, $dataTable);
             $view->vars['column_filtration_form'] = $this->createFiltrationColumnView($view, $dataTable);
+            $view->vars['has_column_filters'] = count($view->vars['column_filtration_form']->children) > 0;
         }
 
         if ($dataTable->getConfig()->isPersonalizationEnabled()) {
