@@ -33,6 +33,16 @@ class DataTableFactory implements DataTableFactoryInterface
     {
         $query = $data;
 
+        $type = $this->registry->getType($type);
+
+        $builder = $type->createBuilder($this, $name, $options);
+
+        $type->buildDataTable($builder, $builder->getOptions());
+
+        if (null === $data && $builder->hasOption('query')) {
+            $data = $builder->getOption('query');
+        }
+
         if (null !== $data && !$data instanceof ProxyQueryInterface) {
             foreach ($this->registry->getProxyQueryFactories() as $proxyQueryFactory) {
                 if ($proxyQueryFactory->supports($data)) {
@@ -42,11 +52,7 @@ class DataTableFactory implements DataTableFactoryInterface
             }
         }
 
-        $type = $this->registry->getType($type);
-
-        $builder = $type->createBuilder($this, $name, $query, $options);
-
-        $type->buildDataTable($builder, $builder->getOptions());
+        $builder->setQuery($query);
 
         return $builder;
     }

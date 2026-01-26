@@ -9,7 +9,6 @@ use Kreyu\Bundle\DataTableBundle\DataTableFactoryInterface;
 use Kreyu\Bundle\DataTableBundle\DataTableInterface;
 use Kreyu\Bundle\DataTableBundle\DataTableView;
 use Kreyu\Bundle\DataTableBundle\Extension\DataTableTypeExtensionInterface;
-use Kreyu\Bundle\DataTableBundle\Query\ProxyQueryInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 interface ResolvedDataTableTypeInterface
@@ -28,7 +27,7 @@ interface ResolvedDataTableTypeInterface
     /**
      * @param array<string, mixed> $options
      */
-    public function createBuilder(DataTableFactoryInterface $factory, string $name, ?ProxyQueryInterface $query = null, array $options = []): DataTableBuilderInterface;
+    public function createBuilder(DataTableFactoryInterface $factory, string $name, array $options = []): DataTableBuilderInterface;
 
     public function createView(DataTableInterface $dataTable): DataTableView;
 

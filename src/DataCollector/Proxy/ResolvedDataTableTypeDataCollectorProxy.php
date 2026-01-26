@@ -9,7 +9,6 @@ use Kreyu\Bundle\DataTableBundle\DataTableBuilderInterface;
 use Kreyu\Bundle\DataTableBundle\DataTableFactoryInterface;
 use Kreyu\Bundle\DataTableBundle\DataTableInterface;
 use Kreyu\Bundle\DataTableBundle\DataTableView;
-use Kreyu\Bundle\DataTableBundle\Query\ProxyQueryInterface;
 use Kreyu\Bundle\DataTableBundle\Type\DataTableTypeInterface;
 use Kreyu\Bundle\DataTableBundle\Type\ResolvedDataTableTypeInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -42,9 +41,9 @@ class ResolvedDataTableTypeDataCollectorProxy implements ResolvedDataTableTypeIn
         return $this->proxiedType->getTypeExtensions();
     }
 
-    public function createBuilder(DataTableFactoryInterface $factory, string $name, ?ProxyQueryInterface $query = null, array $options = []): DataTableBuilderInterface
+    public function createBuilder(DataTableFactoryInterface $factory, string $name, array $options = []): DataTableBuilderInterface
     {
-        $builder = $this->proxiedType->createBuilder($factory, $name, $query, $options);
+        $builder = $this->proxiedType->createBuilder($factory, $name, $options);
         $builder->setAttribute('data_collector/passed_options', $options);
         $builder->setType($this);
 
