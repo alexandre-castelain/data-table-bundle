@@ -67,6 +67,12 @@ class ProductDataTableType extends AbstractDataTableType
 
 This allows you to define a default configuration that is fully overridable.
 
+When a default value is defined, it is no longer mandatory to pass the query as the second argument of the `createDataTable` method.
+
+```php
+$dataTable = $this->createDataTable(ProductDataTableType::class);
+```
+
 ## Overriding the option
 
 When you define a default `query`, you can still override it when creating the data table in the controller:
