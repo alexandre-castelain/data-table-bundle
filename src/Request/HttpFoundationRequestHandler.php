@@ -48,7 +48,7 @@ class HttpFoundationRequestHandler implements RequestHandlerInterface
 
         $form = $dataTable->createFiltrationFormBuilder()->getForm();
 
-        if ($data = $request->get($form->getName())) {
+        if ($data = $this->getRequestParameter($request, $form->getName())) {
             $form->submit($data);
         }
 
@@ -105,7 +105,7 @@ class HttpFoundationRequestHandler implements RequestHandlerInterface
 
         $form = $dataTable->createPersonalizationFormBuilder()->getForm();
 
-        if ($data = $request->get($form->getName())) {
+        if ($data = $this->getRequestParameter($request, $form->getName())) {
             $form->submit($data);
         }
 
@@ -122,13 +122,26 @@ class HttpFoundationRequestHandler implements RequestHandlerInterface
 
         $form = $dataTable->createExportFormBuilder()->getForm();
 
-        if ($data = $request->get($form->getName())) {
+        if ($data = $this->getRequestParameter($request, $form->getName())) {
             $form->submit($data);
         }
 
         if ($form->isSubmitted() && $form->isValid()) {
             $dataTable->setExportData($form->getData());
         }
+    }
+
+    private function getRequestParameter(Request $request, string $name): mixed
+    {
+        if ($request->query->has($name)) {
+            return $request->query->all()[$name];
+        }
+
+        if ($request->request->has($name)) {
+            return $request->request->all()[$name];
+        }
+
+        return null;
     }
 
     private function extractQueryParameter(Request $request, string $path): mixed

@@ -60,8 +60,10 @@ class DoctrineOrmFilterHandlerTest extends TestCase
         ($queryBuilder = $this->createQueryBuilderMock())
             ->expects($this->once())
             ->method('andWhere')
-            ->willReturnCallback(function (mixed $expression) {
+            ->willReturnCallback(function (mixed $expression) use (&$queryBuilder) {
                 $this->assertEquals('expression', $expression);
+
+                return $queryBuilder;
             });
 
         $this->query->method('getQueryBuilder')->willReturn($queryBuilder);
@@ -74,10 +76,12 @@ class DoctrineOrmFilterHandlerTest extends TestCase
         ($queryBuilder = $this->createQueryBuilderMock())
             ->expects($this->once())
             ->method('setParameter')
-            ->willReturnCallback(function ($name, $value, $type) {
+            ->willReturnCallback(function ($name, $value, $type) use (&$queryBuilder) {
                 $this->assertEquals('foo', $name);
                 $this->assertEquals('bar', $value);
                 $this->assertNull($type);
+
+                return $queryBuilder;
             });
 
         $this->query->method('getQueryBuilder')->willReturn($queryBuilder);
@@ -85,15 +89,17 @@ class DoctrineOrmFilterHandlerTest extends TestCase
         $this->createHandler(parameters: [new Parameter('foo', 'bar')])->handle($this->query, $this->data, $this->filter);
     }
 
-    public function testItSetsParameterWithTypeSpecified()
+    public function testItSetsParameterWithTypeSpecified(): void
     {
         ($queryBuilder = $this->createQueryBuilderMock())
             ->expects($this->once())
             ->method('setParameter')
-            ->willReturnCallback(function ($name, $value, $type) {
+            ->willReturnCallback(function ($name, $value, $type) use (&$queryBuilder) {
                 $this->assertEquals('foo', $name);
                 $this->assertEquals('bar', $value);
                 $this->assertEquals('date_immutable', $type);
+
+                return $queryBuilder;
             });
 
         $this->query->method('getQueryBuilder')->willReturn($queryBuilder);
