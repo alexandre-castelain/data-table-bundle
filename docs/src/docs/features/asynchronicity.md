@@ -87,11 +87,21 @@ Notes:
 
 ## Asynchronous Data Table Loading
 
-You can enable asynchronous loading for your data tables using the `async` option. This feature is especially useful for tables with slow data sources or when displaying multiple tables on a single page.
+You can enable asynchronous loading for your data tables using the `async` option. This feature relies on [Turbo Frames lazy loading](https://turbo.hotwired.dev/reference/frames#lazy-loaded-frame) and requires [Symfony UX Turbo](https://symfony.com/bundles/ux-turbo/current/index.html) to be installed. It is especially useful for tables with slow data sources or when displaying multiple tables on a single page.
 
 ### Enabling Asynchronous Loading
 
-To enable asynchronous loading, set the async option to true in your data table type:
+To enable asynchronous loading globally, add the following to your configuration:
+
+```yaml
+# config/packages/kreyu_data_table.yaml
+kreyu_data_table:
+    defaults:
+        async: true
+```
+
+Or enable it per data table type:
+
 ```php
 class ProductDataTableType extends AbstractDataTableType
 {
@@ -109,10 +119,26 @@ With this option enabled, the data table will not load its content immediately w
 
 ### How It Works
 
-- When 'async' is enabled, the table's initial HTML does not include its data rows.
-- The table content is loaded asynchronously via a backend call after the page loads.
+- When `async` is enabled, the table's initial HTML does not include its data rows.
+- The table content is loaded asynchronously via a Turbo Frame lazy request after the page loads.
 - If the data table is not visible in the user's viewport, its content is not loaded until the user scrolls to it. This optimizes performance, especially on pages with multiple or heavy tables.
-- If you need the table to load immediately regardless of visibility, keep async set to false (the default).
+- If you need the table to load immediately regardless of visibility, keep `async` set to `false` (the default).
+
+### Recommended: Using `DataTableTurboResponseTrait`
+
+When using `async`, the lazy Turbo Frame request loads the full page and extracts only the matching `<turbo-frame>`. For better performance, use the `DataTableTurboResponseTrait` in your controller to return only the table's HTML when the request comes from a Turbo Frame:
+
+```php
+if ($dataTable->isRequestFromTurboFrame()) {
+    return $this->createDataTableTurboResponse($dataTable);
+}
+```
+
+See the [Server-side responses for Turbo Frames](#server-side-responses-for-turbo-frames) section above for a full example.
+
+### Limitations
+
+- The async loading mechanism uses a GET request to `app.request.uri`. If the page is served via POST, the POST parameters will not be included in the async request.
 
 
 ## Prefetching
