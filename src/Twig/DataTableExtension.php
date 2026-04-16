@@ -17,6 +17,7 @@ use Kreyu\Bundle\DataTableBundle\Pagination\PaginationView;
 use Kreyu\Bundle\DataTableBundle\ValueRowView;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormView;
+use Twig\DeprecatedCallableInfo;
 use Twig\Environment;
 use Twig\Error\Error as TwigException;
 use Twig\Error\RuntimeError;
@@ -71,7 +72,7 @@ class DataTableExtension extends AbstractExtension
         $functions[] = new TwigFunction('data_table_form_aware', $this->renderDataTableFormAware(...), [
             'needs_environment' => true,
             'is_safe' => ['html'],
-            'deprecated' => true,
+            'deprecation_info' => new DeprecatedCallableInfo('twig/twig', '3.15'),
         ]);
 
         return $functions;
