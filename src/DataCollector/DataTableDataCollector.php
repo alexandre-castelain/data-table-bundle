@@ -36,11 +36,19 @@ class DataTableDataCollector extends AbstractDataCollector implements DataTableD
         }
     }
 
-    public function __sleep(): array
+    /**
+     * @return array<string, mixed>
+     */
+    public function __serialize(): array
     {
         $this->data = $this->cloneVar($this->data)->withMaxDepth($this->maxDepth);
 
-        return parent::__sleep();
+        if (method_exists(parent::class, '__serialize')) {
+            return parent::__serialize();
+        }
+
+        // Symfony 7: __serialize() does not exist yet, replicate __sleep() behavior
+        return ['data' => $this->data];
     }
 
     public static function getTemplate(): ?string

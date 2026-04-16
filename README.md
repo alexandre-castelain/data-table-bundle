@@ -16,6 +16,10 @@
   </p>
 </p>
 
+> [!CAUTION]
+> This package is looking for new maintainers or forks with continued development.  
+> For maintainer role, please contact via e-mail: kontakt@swroblewski.pl  
+> Links to the forks can be put into the README of this repo.
 
 ## About
 

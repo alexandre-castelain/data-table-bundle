@@ -8,16 +8,11 @@ trait ReflectionTrait
 {
     private function getPrivatePropertyValue(object $object, string $property): mixed
     {
-        $reflection = new \ReflectionProperty($object, $property);
-        $reflection->setAccessible(true);
-
-        return $reflection->getValue($object);
+        return (new \ReflectionProperty($object, $property))->getValue($object);
     }
 
     private function setPrivatePropertyValue(object $object, string $property, mixed $value): void
     {
-        $reflection = new \ReflectionProperty($object, $property);
-        $reflection->setAccessible(true);
-        $reflection->setValue($object, $value);
+        (new \ReflectionProperty($object, $property))->setValue($object, $value);
     }
 }
