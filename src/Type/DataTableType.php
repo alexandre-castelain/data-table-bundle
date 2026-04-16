@@ -116,25 +116,38 @@ final class DataTableType implements DataTableTypeInterface
             'per_page_choices' => $options['per_page_choices'],
             'is_request_from_turbo_frame' => $dataTable->isRequestFromTurboFrame(),
             'is_async' => $dataTable->getConfig()->isAsync(),
+            'responsive_enabled' => $options['responsive_enabled'],
             'responsive_breakpoints' => $options['responsive_breakpoints'],
             'active_breakpoint' => $dataTable->getActiveBreakpoint(),
-            'breakpoint_resolver' => new BreakpointResolver($options['responsive_breakpoints']),
+            'responsive_hidden_columns' => [],
         ]);
 
-        $breakpointNames = array_keys($options['responsive_breakpoints']);
+        if ($options['responsive_enabled']) {
+            $resolver = new BreakpointResolver($options['responsive_breakpoints']);
+            $activeBreakpoint = $dataTable->getActiveBreakpoint();
+            $hiddenColumns = [];
 
-        foreach ($columns as $column) {
-            $visibleFrom = $column->getConfig()->getOption('visible_from');
+            foreach ($columns as $column) {
+                $visibleFrom = $column->getConfig()->getOption('visible_from');
 
-            if (is_string($visibleFrom) && !in_array($visibleFrom, $breakpointNames, true)) {
-                throw new InvalidArgumentException(sprintf(
-                    'Column "%s" has visible_from "%s", but the data table "%s" only defines breakpoints: %s.',
-                    $column->getName(),
-                    $visibleFrom,
-                    $dataTable->getName(),
-                    implode(', ', $breakpointNames),
-                ));
+                if (is_string($visibleFrom) && !$resolver->has($visibleFrom)) {
+                    throw new InvalidArgumentException(sprintf(
+                        'Column "%s" has visible_from "%s", but the data table "%s" only defines breakpoints: %s.',
+                        $column->getName(),
+                        $visibleFrom,
+                        $dataTable->getName(),
+                        implode(', ', array_keys($resolver->getBreakpoints())),
+                    ));
+                }
+
+                if (false === $visibleFrom) {
+                    $hiddenColumns[] = $column->getName();
+                } elseif (is_string($visibleFrom) && null !== $activeBreakpoint && !$resolver->isVisible($activeBreakpoint, $visibleFrom)) {
+                    $hiddenColumns[] = $column->getName();
+                }
             }
+
+            $view->vars['responsive_hidden_columns'] = $hiddenColumns;
         }
 
         $view->headerRow = $this->createHeaderRowView($view, $dataTable, $visibleColumns);
@@ -222,6 +235,7 @@ final class DataTableType implements DataTableTypeInterface
                 'exporting_enabled' => $this->defaults['exporting']['enabled'] ?? false,
                 'exporting_form_factory' => $this->defaults['exporting']['form_factory'] ?? null,
                 'async' => $this->defaults['async'] ?? false,
+                'responsive_enabled' => $this->defaults['responsive']['enabled'] ?? false,
                 'responsive_breakpoints' => $this->defaults['responsive']['breakpoints'] ?? [
                     'sm' => 576,
                     'md' => 768,
@@ -261,6 +275,7 @@ final class DataTableType implements DataTableTypeInterface
             ->setAllowedTypes('exporting_enabled', 'bool')
             ->setAllowedTypes('exporting_form_factory', ['null', FormFactoryInterface::class])
             ->setAllowedTypes('async', ['bool'])
+            ->setAllowedTypes('responsive_enabled', 'bool')
             ->setAllowedTypes('responsive_breakpoints', 'array')
         ;
     }

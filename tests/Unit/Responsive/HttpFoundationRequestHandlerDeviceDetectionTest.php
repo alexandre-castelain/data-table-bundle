@@ -87,6 +87,23 @@ class HttpFoundationRequestHandlerDeviceDetectionTest extends TestCase
         $handler->handle($dataTable, $this->createRequest());
     }
 
+    public function testInvalidBreakpointParameterFallsBackToUserAgent(): void
+    {
+        $detector = $this->createMock(DeviceDetectorInterface::class);
+        $detector->expects($this->once())
+            ->method('detect')
+            ->willReturn(Device::Desktop);
+
+        $handler = new HttpFoundationRequestHandler($detector);
+
+        $dataTable = $this->createDataTableMock();
+        $dataTable->expects($this->once())
+            ->method('setActiveBreakpoint')
+            ->with('xl'); // Falls back to UA (Desktop → largest)
+
+        $handler->handle($dataTable, $this->createRequest(['_breakpoint' => 'invalid']));
+    }
+
     public function testNoDeviceDetectionWithoutDetector(): void
     {
         $handler = new HttpFoundationRequestHandler();

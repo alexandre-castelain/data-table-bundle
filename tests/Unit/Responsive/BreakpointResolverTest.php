@@ -72,9 +72,42 @@ class BreakpointResolverTest extends TestCase
         yield 'xl >= xl' => ['xl', 'xl', true];
     }
 
-    public function testIsVisibleWithUnknownMinimumBreakpointReturnsTrue(): void
+    public function testIsVisibleWithUnknownMinimumBreakpointReturnsFalse(): void
     {
-        $this->assertTrue($this->resolver->isVisible('md', 'unknown'));
+        $this->assertFalse($this->resolver->isVisible('md', 'unknown'));
+    }
+
+    public function testIsVisibleWithUnknownActiveBreakpointReturnsFalse(): void
+    {
+        $this->assertFalse($this->resolver->isVisible('unknown', 'md'));
+    }
+
+    public function testBreakpointsAreSortedAutomatically(): void
+    {
+        $resolver = new BreakpointResolver([
+            'xl' => 1200,
+            'sm' => 576,
+            'lg' => 992,
+            'md' => 768,
+        ]);
+
+        // Despite unordered input, resolve should work correctly
+        $this->assertSame('sm', $resolver->resolve(400));
+        $this->assertSame('md', $resolver->resolve(700));
+        $this->assertSame('lg', $resolver->resolve(900));
+        $this->assertSame('xl', $resolver->resolve(1100));
+
+        // isVisible should respect the sorted order
+        $this->assertTrue($resolver->isVisible('lg', 'sm'));
+        $this->assertFalse($resolver->isVisible('sm', 'lg'));
+    }
+
+    public function testHasBreakpoint(): void
+    {
+        $this->assertTrue($this->resolver->has('sm'));
+        $this->assertTrue($this->resolver->has('xl'));
+        $this->assertFalse($this->resolver->has('unknown'));
+        $this->assertFalse($this->resolver->has(''));
     }
 
     #[DataProvider('provideUaFallbackCases')]
