@@ -57,7 +57,7 @@ class ExampleDataTableType extends AbstractDataTableType
 
 - You can define as many visibility groups as needed.
 - A column can belong to multiple groups by specifying multiple group names in the `column_visibility_groups` array.
-- If `column_visibility_groups` is `null` or an empty array, the column is shown in the "default" group.
+- If `column_visibility_groups` is `null` or an empty array, the column is visible in every group (it does not belong to any group and is therefore never filtered out).
 - Creating a default group is optional but recommended for better user experience : it ensures that the user can go back to the base view.
 
 ## UI

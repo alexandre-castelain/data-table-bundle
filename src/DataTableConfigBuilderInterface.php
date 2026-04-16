@@ -6,7 +6,7 @@ namespace Kreyu\Bundle\DataTableBundle;
 
 use Kreyu\Bundle\DataTableBundle\Action\ActionFactoryInterface;
 use Kreyu\Bundle\DataTableBundle\Column\ColumnFactoryInterface;
-use Kreyu\Bundle\DataTableBundle\ColumnVisibilityGroup\ColumnVisibilityGroupBuilderInterface;
+use Kreyu\Bundle\DataTableBundle\ColumnVisibilityGroup\ColumnVisibilityGroupFactoryInterface;
 use Kreyu\Bundle\DataTableBundle\Exporter\ExportData;
 use Kreyu\Bundle\DataTableBundle\Exporter\ExporterFactoryInterface;
 use Kreyu\Bundle\DataTableBundle\Filter\FilterFactoryInterface;
@@ -52,7 +52,7 @@ interface DataTableConfigBuilderInterface extends DataTableConfigInterface
 
     public function setExporterFactory(ExporterFactoryInterface $exporterFactory): static;
 
-    public function setColumnVisibilityGroupBuilder(ColumnVisibilityGroupBuilderInterface $columnVisibilityGroupBuilder): static;
+    public function setColumnVisibilityGroupFactory(ColumnVisibilityGroupFactoryInterface $columnVisibilityGroupFactory): static;
 
     public function setExportingEnabled(bool $exportingEnabled): static;
 

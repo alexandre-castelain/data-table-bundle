@@ -223,8 +223,12 @@ interface DataTableInterface
 
     public function setRequestedColumnVisibilityGroup(?string $requestedColumnVisibilityGroup): self;
 
+    public function getRequestedColumnVisibilityGroup(): ?string;
+
     /**
      * @return array<string, ColumnVisibilityGroupInterface>
      */
     public function getColumnVisibilityGroups(): array;
+
+    public function addColumnVisibilityGroup(ColumnVisibilityGroupInterface $columnVisibilityGroup): static;
 }

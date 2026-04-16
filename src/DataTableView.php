@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kreyu\Bundle\DataTableBundle;
 
 use Kreyu\Bundle\DataTableBundle\Action\ActionView;
-use Kreyu\Bundle\DataTableBundle\ColumnVisibilityGroup\ColumnVisibilityGroupInterface;
+use Kreyu\Bundle\DataTableBundle\ColumnVisibilityGroup\ColumnVisibilityGroupView;
 use Kreyu\Bundle\DataTableBundle\Filter\FilterView;
 use Kreyu\Bundle\DataTableBundle\Pagination\PaginationView;
 
@@ -35,7 +35,7 @@ class DataTableView
     public array $actions = [];
 
     /**
-     * @var array<ColumnVisibilityGroupInterface>
+     * @var array<string, ColumnVisibilityGroupView>
      */
     public array $columnVisibilityGroups = [];
 }

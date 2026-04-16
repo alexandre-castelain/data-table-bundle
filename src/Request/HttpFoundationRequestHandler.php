@@ -157,27 +157,29 @@ class HttpFoundationRequestHandler implements RequestHandlerInterface
 
     private function columnVisibilityGroup(DataTableInterface $dataTable, Request $request): void
     {
-        $parameterName = $dataTable->getConfig()->getColumnVisibilityGroupParameterName();
+        $groups = $dataTable->getColumnVisibilityGroups();
 
-        $requestColumnVisibilityGroup = $this->extractQueryParameter($request, "[$parameterName]");
-
-        $mustBeDefault = false;
-        if (null === $requestColumnVisibilityGroup) {
-            $mustBeDefault = true;
+        if (empty($groups)) {
+            return;
         }
 
-        // This also checks if the requested column visibility group exists
-        foreach ($dataTable->getColumnVisibilityGroups() as $columnVisibilityGroup) {
-            if (
-                ($mustBeDefault && $columnVisibilityGroup->isDefault())
-                || $columnVisibilityGroup->getName() === $requestColumnVisibilityGroup
-            ) {
-                $columnVisibilityGroup->setIsSelected(true);
-                if ($mustBeDefault) {
-                    $requestColumnVisibilityGroup = $columnVisibilityGroup->getName();
-                }
-                $dataTable->setRequestedColumnVisibilityGroup($requestColumnVisibilityGroup);
+        $parameterName = $dataTable->getConfig()->getColumnVisibilityGroupParameterName();
+        $requested = $this->extractQueryParameter($request, "[$parameterName]");
+
+        if (null !== $requested && isset($groups[$requested])) {
+            $dataTable->setRequestedColumnVisibilityGroup($requested);
+
+            return;
+        }
+
+        foreach ($groups as $group) {
+            if ($group->isDefault()) {
+                $dataTable->setRequestedColumnVisibilityGroup($group->getName());
+
+                return;
             }
         }
+
+        $dataTable->setRequestedColumnVisibilityGroup(array_key_first($groups));
     }
 }

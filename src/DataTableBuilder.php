@@ -737,9 +737,9 @@ class DataTableBuilder extends DataTableConfigBuilder implements DataTableBuilde
         }
 
         if ($columnVisibilityGroup instanceof ColumnVisibilityGroupInterface) {
-            $this->columns[$columnVisibilityGroup->getName()] = $columnVisibilityGroup;
+            $this->columnVisibilityGroups[$columnVisibilityGroup->getName()] = $columnVisibilityGroup;
 
-            unset($this->unresolvedColumns[$columnVisibilityGroup->getName()]);
+            unset($this->unresolvedColumnVisibilityGroups[$columnVisibilityGroup->getName()]);
 
             return $this;
         }
@@ -776,7 +776,7 @@ class DataTableBuilder extends DataTableConfigBuilder implements DataTableBuilde
             throw $this->createBuilderLockedException();
         }
 
-        return $this->getColumnVisibilityGroupBuilder()->getColumnVisibilityGroup($name, $options);
+        return $this->getColumnVisibilityGroupFactory()->create($name, $options);
     }
 
     public function getDataTable(): DataTableInterface
@@ -955,8 +955,17 @@ class DataTableBuilder extends DataTableConfigBuilder implements DataTableBuilde
 
     private function resolveColumnVisibilityGroups(): void
     {
-        foreach (array_keys($this->unresolvedColumnVisibilityGroups) as $columnVisibilityGroups) {
-            $this->resolveColumnVisibilityGroup($columnVisibilityGroups);
+        foreach (array_keys($this->unresolvedColumnVisibilityGroups) as $name) {
+            $this->resolveColumnVisibilityGroup($name);
+        }
+
+        $defaults = array_filter(
+            $this->columnVisibilityGroups,
+            static fn (ColumnVisibilityGroupInterface $group) => $group->isDefault(),
+        );
+
+        if (count($defaults) > 1) {
+            throw new InvalidArgumentException(sprintf('Only one column visibility group can be marked as default, but %d were found: "%s".', count($defaults), implode('", "', array_keys($defaults))));
         }
     }
 
@@ -966,7 +975,7 @@ class DataTableBuilder extends DataTableConfigBuilder implements DataTableBuilde
 
         unset($this->unresolvedColumnVisibilityGroups[$name]);
 
-        $columnVisibilityGroup = $this->getColumnVisibilityGroupBuilder()->getColumnVisibilityGroup($name, $options);
+        $columnVisibilityGroup = $this->getColumnVisibilityGroupFactory()->create($name, $options);
 
         return $this->columnVisibilityGroups[$name] = $columnVisibilityGroup;
     }

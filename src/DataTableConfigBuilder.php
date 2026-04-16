@@ -6,7 +6,7 @@ namespace Kreyu\Bundle\DataTableBundle;
 
 use Kreyu\Bundle\DataTableBundle\Action\ActionFactoryInterface;
 use Kreyu\Bundle\DataTableBundle\Column\ColumnFactoryInterface;
-use Kreyu\Bundle\DataTableBundle\ColumnVisibilityGroup\ColumnVisibilityGroupBuilderInterface;
+use Kreyu\Bundle\DataTableBundle\ColumnVisibilityGroup\ColumnVisibilityGroupFactoryInterface;
 use Kreyu\Bundle\DataTableBundle\Exception\BadMethodCallException;
 use Kreyu\Bundle\DataTableBundle\Exporter\ExportData;
 use Kreyu\Bundle\DataTableBundle\Exporter\ExporterFactoryInterface;
@@ -61,7 +61,7 @@ class DataTableConfigBuilder implements DataTableConfigBuilderInterface
     private ?FilterFactoryInterface $filterFactory = null;
     private ?ActionFactoryInterface $actionFactory = null;
     private ?ExporterFactoryInterface $exporterFactory = null;
-    private ?ColumnVisibilityGroupBuilderInterface $columnVisibilityGroupBuilder = null;
+    private ?ColumnVisibilityGroupFactoryInterface $columnVisibilityGroupFactory = null;
     private ?RequestHandlerInterface $requestHandler = null;
 
     private bool $sortingClearable = false;
@@ -193,22 +193,22 @@ class DataTableConfigBuilder implements DataTableConfigBuilderInterface
         return $this;
     }
 
-    public function getColumnVisibilityGroupBuilder(): ColumnVisibilityGroupBuilderInterface
+    public function getColumnVisibilityGroupFactory(): ColumnVisibilityGroupFactoryInterface
     {
-        if (!isset($this->columnVisibilityGroupBuilder)) {
-            throw new BadMethodCallException(sprintf('The column factory is not set, use the "%s::setColumnVisibilityGroupBuilder()" method to set the column factory.', $this::class));
+        if (!isset($this->columnVisibilityGroupFactory)) {
+            throw new BadMethodCallException(sprintf('The column visibility group factory is not set, use the "%s::setColumnVisibilityGroupFactory()" method to set the factory.', $this::class));
         }
 
-        return $this->columnVisibilityGroupBuilder;
+        return $this->columnVisibilityGroupFactory;
     }
 
-    public function setColumnVisibilityGroupBuilder(ColumnVisibilityGroupBuilderInterface $columnVisibilityGroupBuilder): static
+    public function setColumnVisibilityGroupFactory(ColumnVisibilityGroupFactoryInterface $columnVisibilityGroupFactory): static
     {
         if ($this->locked) {
             throw $this->createBuilderLockedException();
         }
 
-        $this->columnVisibilityGroupBuilder = $columnVisibilityGroupBuilder;
+        $this->columnVisibilityGroupFactory = $columnVisibilityGroupFactory;
 
         return $this;
     }

@@ -209,10 +209,12 @@ class DataTable implements DataTableInterface
                 $visible = $this->personalizationData?->getColumn($column)?->isVisible() ?? $visible;
             }
 
-            if ($visible && $column->getConfig()->getOption('column_visibility_groups')) {
-                return
-                    null === $this->requestedColumnVisibilityGroup
-                    || in_array($this->requestedColumnVisibilityGroup, (array) $column->getConfig()->getOption('column_visibility_groups'), true);
+            if ($visible && null !== $this->requestedColumnVisibilityGroup) {
+                $groups = (array) $column->getConfig()->getOption('column_visibility_groups');
+
+                if (!empty($groups)) {
+                    $visible = in_array($this->requestedColumnVisibilityGroup, $groups, true);
+                }
             }
 
             return $visible;
@@ -910,6 +912,11 @@ class DataTable implements DataTableInterface
         $this->requestedColumnVisibilityGroup = $requestedColumnVisibilityGroup;
 
         return $this;
+    }
+
+    public function getRequestedColumnVisibilityGroup(): ?string
+    {
+        return $this->requestedColumnVisibilityGroup;
     }
 
     private function dispatch(string $eventName, DataTableEvent $event): void

@@ -26,8 +26,8 @@ use Kreyu\Bundle\DataTableBundle\Column\Type\ResolvedColumnTypeFactory;
 use Kreyu\Bundle\DataTableBundle\Column\Type\ResolvedColumnTypeFactoryInterface;
 use Kreyu\Bundle\DataTableBundle\Column\Type\TemplateColumnType;
 use Kreyu\Bundle\DataTableBundle\Column\Type\TextColumnType;
-use Kreyu\Bundle\DataTableBundle\ColumnVisibilityGroup\ColumnVisibilityGroupBuilder;
-use Kreyu\Bundle\DataTableBundle\ColumnVisibilityGroup\ColumnVisibilityGroupBuilderInterface;
+use Kreyu\Bundle\DataTableBundle\ColumnVisibilityGroup\ColumnVisibilityGroupFactory;
+use Kreyu\Bundle\DataTableBundle\ColumnVisibilityGroup\ColumnVisibilityGroupFactoryInterface;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
@@ -59,9 +59,9 @@ return static function (ContainerConfigurator $configurator) {
     ;
 
     $services
-        ->set('kreyu_data_table.column_visibility_group.builder', ColumnVisibilityGroupBuilder::class)
+        ->set('kreyu_data_table.column_visibility_group.factory', ColumnVisibilityGroupFactory::class)
         ->args([service('translator')])
-        ->alias(ColumnVisibilityGroupBuilderInterface::class, 'kreyu_data_table.column_visibility_group.builder')
+        ->alias(ColumnVisibilityGroupFactoryInterface::class, 'kreyu_data_table.column_visibility_group.factory')
     ;
 
     $services
