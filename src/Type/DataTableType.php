@@ -22,6 +22,7 @@ use Kreyu\Bundle\DataTableBundle\Pagination\PaginationView;
 use Kreyu\Bundle\DataTableBundle\Persistence\PersistenceAdapterInterface;
 use Kreyu\Bundle\DataTableBundle\Persistence\PersistenceSubjectProviderInterface;
 use Kreyu\Bundle\DataTableBundle\Request\RequestHandlerInterface;
+use Kreyu\Bundle\DataTableBundle\Responsive\Device;
 use Kreyu\Bundle\DataTableBundle\RowIterator;
 use Kreyu\Bundle\DataTableBundle\Util\FormUtil;
 use Kreyu\Bundle\DataTableBundle\ValueRowView;
@@ -107,6 +108,7 @@ final class DataTableType implements DataTableTypeInterface
             'sorting_clearable' => $dataTable->getConfig()->isSortingClearable(),
             'has_batch_actions' => !empty($dataTable->getBatchActions()),
             'per_page_choices' => $options['per_page_choices'],
+            'device' => $dataTable->getDevice(),
         ]);
 
         $view->headerRow = $this->createHeaderRowView($view, $dataTable, $visibleColumns);

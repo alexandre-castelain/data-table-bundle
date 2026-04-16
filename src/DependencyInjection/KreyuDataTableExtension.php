@@ -15,6 +15,8 @@ use Kreyu\Bundle\DataTableBundle\Filter\Extension\FilterTypeExtensionInterface;
 use Kreyu\Bundle\DataTableBundle\Filter\Type\FilterTypeInterface;
 use Kreyu\Bundle\DataTableBundle\Persistence\PersistenceAdapterInterface;
 use Kreyu\Bundle\DataTableBundle\Query\ProxyQueryFactoryInterface;
+use Kreyu\Bundle\DataTableBundle\Responsive\DeviceDetectorInterface;
+use Kreyu\Bundle\DataTableBundle\Responsive\UserAgentDeviceDetector;
 use Kreyu\Bundle\DataTableBundle\Type\DataTableTypeInterface;
 use Symfony\Component\AssetMapper\AssetMapperInterface;
 use Symfony\Component\Config\FileLocator;
@@ -75,6 +77,16 @@ class KreyuDataTableExtension extends Extension implements PrependExtensionInter
             $container
                 ->getDefinition('kreyu_data_table.debug.data_collector')
                 ->setArgument('$maxDepth', $config['profiler']['max_depth']);
+        }
+
+        if ($config['responsive']['enabled'] ?? false) {
+            $container->register('kreyu_data_table.responsive.device_detector', UserAgentDeviceDetector::class);
+            $container->setAlias(DeviceDetectorInterface::class, 'kreyu_data_table.responsive.device_detector');
+
+            $container
+                ->getDefinition('kreyu_data_table.request_handler.http_foundation')
+                ->setArgument('$deviceDetector', new Reference('kreyu_data_table.responsive.device_detector'))
+            ;
         }
     }
 

@@ -9,6 +9,7 @@ use Kreyu\Bundle\DataTableBundle\Column\Type\ColumnType;
 use Kreyu\Bundle\DataTableBundle\Column\Type\ColumnTypeInterface;
 use Kreyu\Bundle\DataTableBundle\Column\Type\ResolvedColumnTypeInterface;
 use Kreyu\Bundle\DataTableBundle\DataTableView;
+use Kreyu\Bundle\DataTableBundle\Responsive\Device;
 use Kreyu\Bundle\DataTableBundle\Sorting\SortingData;
 use Kreyu\Bundle\DataTableBundle\Test\Column\Type\ColumnTypeTestCase;
 use Kreyu\Bundle\DataTableBundle\Tests\Fixtures\Model\User;
@@ -1056,6 +1057,48 @@ class ColumnTypeTest extends ColumnTypeTestCase
 
         $this->assertEquals($expectedBlockPrefixes, $columnHeaderView->vars['block_prefixes']);
         $this->assertEquals($expectedBlockPrefixes, $columnValueView->vars['block_prefixes']);
+    }
+
+    public function testDefaultVisibleFromIsPhone(): void
+    {
+        $column = $this->createNamedColumn('firstName');
+
+        $columnHeaderView = $this->createColumnHeaderView($column);
+        $columnValueView = $this->createColumnValueView($column);
+
+        $this->assertSame(Device::Phone, $columnHeaderView->vars['visible_from']);
+        $this->assertSame(Device::Phone, $columnValueView->vars['visible_from']);
+    }
+
+    #[DataProvider('provideVisibleFromOptions')]
+    public function testPassingVisibleFromOption(Device|false $visibleFrom): void
+    {
+        $column = $this->createNamedColumn('firstName', [
+            'visible_from' => $visibleFrom,
+        ]);
+
+        $columnHeaderView = $this->createColumnHeaderView($column);
+        $columnValueView = $this->createColumnValueView($column);
+
+        $this->assertSame($visibleFrom, $columnHeaderView->vars['visible_from']);
+        $this->assertSame($visibleFrom, $columnValueView->vars['visible_from']);
+    }
+
+    public static function provideVisibleFromOptions(): iterable
+    {
+        yield 'phone' => [Device::Phone];
+        yield 'tablet' => [Device::Tablet];
+        yield 'desktop' => [Device::Desktop];
+        yield 'false' => [false];
+    }
+
+    public function testVisibleFromRejectsTrueValue(): void
+    {
+        $this->expectException(\Symfony\Component\OptionsResolver\Exception\InvalidOptionsException::class);
+
+        $this->createNamedColumn('firstName', [
+            'visible_from' => true,
+        ]);
     }
 
     protected function expectTranslation(
