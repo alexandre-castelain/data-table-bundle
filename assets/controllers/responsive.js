@@ -5,87 +5,120 @@ export default class extends Controller {
     static targets = ['toggleButton', 'collapsibleRow']
 
     static values = {
-        phoneMax: { type: Number, default: 767 },
-        tabletMax: { type: Number, default: 1023 },
-        parameterName: { type: String, default: '_device' },
-        currentDevice: { type: String, default: '' },
+        breakpoints: { type: Object, default: {} },
+        parameterName: { type: String, default: '_breakpoint' },
+        currentBreakpoint: { type: String, default: '' },
     }
 
-    #resizeTimeout = null
-    #boundResize = null
+    #resizeObserver = null
+    #debounceTimeout = null
 
     connect() {
-        this.#detectAndUpdate();
+        const frame = this.element.closest('turbo-frame')
 
-        this.#boundResize = this.#onResize.bind(this);
-        window.addEventListener('resize', this.#boundResize);
+        if (!frame) {
+            this.#reveal()
+            return
+        }
+
+        // Synchronous check before first paint: does the server breakpoint match reality?
+        const width = Math.round(frame.getBoundingClientRect().width)
+
+        if (width > 0) {
+            const breakpoint = this.#resolveBreakpoint(width)
+
+            if (breakpoint !== this.currentBreakpointValue) {
+                // Mismatch: keep hidden (CSS class), reload with correct breakpoint
+                this.currentBreakpointValue = breakpoint
+                this.#reloadFrame(breakpoint)
+            } else {
+                // Match: reveal immediately
+                this.#reveal()
+            }
+        } else {
+            this.#reveal()
+        }
+
+        this.#resizeObserver = new ResizeObserver((entries) => {
+            this.#onResize(Math.round(entries[0].contentRect.width))
+        })
+        this.#resizeObserver.observe(frame)
     }
 
     disconnect() {
-        window.removeEventListener('resize', this.#boundResize);
+        if (this.#resizeObserver) {
+            this.#resizeObserver.disconnect()
+            this.#resizeObserver = null
+        }
 
-        if (this.#resizeTimeout) {
-            clearTimeout(this.#resizeTimeout);
+        if (this.#debounceTimeout) {
+            clearTimeout(this.#debounceTimeout)
+            this.#debounceTimeout = null
         }
     }
 
     toggle(event) {
-        const button = event.currentTarget;
-        const index = button.dataset.rowIndex;
-        const row = this.collapsibleRowTargets.find(r => r.dataset.rowIndex === index);
+        const button = event.currentTarget
+        const index = button.dataset.rowIndex
+        const row = this.collapsibleRowTargets.find(r => r.dataset.rowIndex === index)
 
         if (!row) {
-            return;
+            return
         }
 
-        row.hidden = !row.hidden;
-        button.setAttribute('aria-expanded', String(!row.hidden));
-        button.querySelector('.kreyu-dt-toggle-icon').textContent = row.hidden ? '+' : '\u2212';
+        row.hidden = !row.hidden
+        button.setAttribute('aria-expanded', String(!row.hidden))
+        button.querySelector('.kreyu-dt-toggle-icon').textContent = row.hidden ? '+' : '\u2212'
     }
 
-    #onResize() {
-        if (this.#resizeTimeout) {
-            clearTimeout(this.#resizeTimeout);
-        }
-
-        this.#resizeTimeout = setTimeout(() => this.#detectAndUpdate(), 250);
+    #reveal() {
+        this.element.classList.remove('kreyu-dt-responsive-pending')
     }
 
-    #detectAndUpdate() {
-        const device = this.#detectDevice();
-
-        if (device === this.currentDeviceValue) {
-            return;
+    #onResize(width) {
+        if (this.#debounceTimeout) {
+            clearTimeout(this.#debounceTimeout)
         }
 
-        this.currentDeviceValue = device;
-        this.#reloadFrame(device);
+        this.#debounceTimeout = setTimeout(() => this.#detectAndUpdate(width), 250)
     }
 
-    #detectDevice() {
-        const width = window.innerWidth;
+    #detectAndUpdate(width) {
+        const breakpoint = this.#resolveBreakpoint(width)
 
-        if (width <= this.phoneMaxValue) {
-            return 'phone';
+        if (breakpoint === this.currentBreakpointValue) {
+            return
         }
 
-        if (width <= this.tabletMaxValue) {
-            return 'tablet';
-        }
-
-        return 'desktop';
+        this.currentBreakpointValue = breakpoint
+        this.#reloadFrame(breakpoint)
     }
 
-    #reloadFrame(device) {
-        const frame = this.element.closest('turbo-frame');
+    #resolveBreakpoint(width) {
+        const breakpoints = this.breakpointsValue
+
+        for (const [name, maxWidth] of Object.entries(breakpoints)) {
+            if (width <= maxWidth) {
+                return name
+            }
+        }
+
+        // Above all breakpoints: return the largest one
+        const names = Object.keys(breakpoints)
+        return names.length > 0 ? names[names.length - 1] : ''
+    }
+
+    #reloadFrame(breakpoint) {
+        const frame = this.element.closest('turbo-frame')
 
         if (!frame) {
-            return;
+            return
         }
 
-        const url = new URL(window.location.href);
-        url.searchParams.set(this.parameterNameValue, device);
+        const baseUrl = frame.getAttribute('src') || window.location.href
+        const url = new URL(baseUrl, window.location.origin)
+        url.searchParams.set(this.parameterNameValue, breakpoint)
 
-        frame.src = url.toString();
+        frame.src = url.toString()
     }
 }

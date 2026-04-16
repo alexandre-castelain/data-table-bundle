@@ -9,7 +9,6 @@ use Kreyu\Bundle\DataTableBundle\Column\Type\ColumnType;
 use Kreyu\Bundle\DataTableBundle\Column\Type\ColumnTypeInterface;
 use Kreyu\Bundle\DataTableBundle\Column\Type\ResolvedColumnTypeInterface;
 use Kreyu\Bundle\DataTableBundle\DataTableView;
-use Kreyu\Bundle\DataTableBundle\Responsive\Device;
 use Kreyu\Bundle\DataTableBundle\Sorting\SortingData;
 use Kreyu\Bundle\DataTableBundle\Test\Column\Type\ColumnTypeTestCase;
 use Kreyu\Bundle\DataTableBundle\Tests\Fixtures\Model\User;
@@ -1059,19 +1058,19 @@ class ColumnTypeTest extends ColumnTypeTestCase
         $this->assertEquals($expectedBlockPrefixes, $columnValueView->vars['block_prefixes']);
     }
 
-    public function testDefaultVisibleFromIsPhone(): void
+    public function testDefaultVisibleFromIsNull(): void
     {
         $column = $this->createNamedColumn('firstName');
 
         $columnHeaderView = $this->createColumnHeaderView($column);
         $columnValueView = $this->createColumnValueView($column);
 
-        $this->assertSame(Device::Phone, $columnHeaderView->vars['visible_from']);
-        $this->assertSame(Device::Phone, $columnValueView->vars['visible_from']);
+        $this->assertNull($columnHeaderView->vars['visible_from']);
+        $this->assertNull($columnValueView->vars['visible_from']);
     }
 
     #[DataProvider('provideVisibleFromOptions')]
-    public function testPassingVisibleFromOption(Device|false $visibleFrom): void
+    public function testPassingVisibleFromOption(string|false|null $visibleFrom): void
     {
         $column = $this->createNamedColumn('firstName', [
             'visible_from' => $visibleFrom,
@@ -1086,10 +1085,12 @@ class ColumnTypeTest extends ColumnTypeTestCase
 
     public static function provideVisibleFromOptions(): iterable
     {
-        yield 'phone' => [Device::Phone];
-        yield 'tablet' => [Device::Tablet];
-        yield 'desktop' => [Device::Desktop];
-        yield 'false' => [false];
+        yield 'null (always visible)' => [null];
+        yield 'sm' => ['sm'];
+        yield 'md' => ['md'];
+        yield 'lg' => ['lg'];
+        yield 'xl' => ['xl'];
+        yield 'false (always collapsed)' => [false];
     }
 
     public function testVisibleFromRejectsTrueValue(): void

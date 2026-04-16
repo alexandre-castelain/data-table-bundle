@@ -8,7 +8,7 @@ use Kreyu\Bundle\DataTableBundle\DataTableInterface;
 use Kreyu\Bundle\DataTableBundle\Exception\UnexpectedTypeException;
 use Kreyu\Bundle\DataTableBundle\Pagination\PaginationData;
 use Kreyu\Bundle\DataTableBundle\Pagination\PaginationInterface;
-use Kreyu\Bundle\DataTableBundle\Responsive\Device;
+use Kreyu\Bundle\DataTableBundle\Responsive\BreakpointResolver;
 use Kreyu\Bundle\DataTableBundle\Responsive\DeviceDetectorInterface;
 use Kreyu\Bundle\DataTableBundle\Sorting\SortingData;
 use Symfony\Component\HttpFoundation\Request;
@@ -156,16 +156,19 @@ class HttpFoundationRequestHandler implements RequestHandlerInterface
 
     private function detectDevice(DataTableInterface $dataTable, Request $request): void
     {
-        $deviceParam = $request->query->get('_device');
+        $breakpoint = $request->query->get('_breakpoint');
 
-        if (null !== $deviceParam && null !== $device = Device::tryFrom($deviceParam)) {
-            $dataTable->setDevice($device);
+        if (null !== $breakpoint) {
+            $dataTable->setActiveBreakpoint($breakpoint);
 
             return;
         }
 
         if (null !== $this->deviceDetector) {
-            $dataTable->setDevice($this->deviceDetector->detect($request));
+            $device = $this->deviceDetector->detect($request);
+            $breakpoints = $dataTable->getConfig()->getOption('responsive_breakpoints') ?? [];
+            $resolver = new BreakpointResolver($breakpoints);
+            $dataTable->setActiveBreakpoint($resolver->resolveUaFallback($device));
         }
     }
 

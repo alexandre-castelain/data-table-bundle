@@ -1,7 +1,7 @@
 {% trans_default_domain 'KreyuDataTable' %}
 
 {# Responsive blocks — import via {% use %} in responsive themes #}
-{# Provides collapsible rows for columns hidden on the current device #}
+{# Provides collapsible rows for columns hidden at the current breakpoint #}
 
 {% block kreyu_data_table %}
     {% set stimulus_controllers = ['kreyu--data-table-bundle--state', 'kreyu--data-table-bundle--responsive'] %}
@@ -11,7 +11,10 @@
     {% endif %}
 
     <turbo-frame id="kreyu_data_table_{{ name }}" target="_top">
-        <div {{ block('kreyu_data_table_attributes', theme) }}>
+        <style>
+            .kreyu-dt-responsive-pending { visibility: hidden; }
+        </style>
+        <div class="kreyu-dt-responsive-pending" {{ block('kreyu_data_table_attributes', theme) }}>
             {{ block('action_bar', theme) }}
             {{ block('table', theme) }}
 
@@ -25,7 +28,8 @@
 {% block kreyu_data_table_attributes %}
     data-controller="{{ stimulus_controllers|join(' ') }}"
     data-kreyu--data-table-bundle--state-url-query-parameters-value="{{ url_query_parameters|default({})|json_encode(constant('JSON_FORCE_OBJECT')) }}"
-    data-kreyu--data-table-bundle--responsive-current-device-value="{{ device.value }}"
+    data-kreyu--data-table-bundle--responsive-breakpoints-value="{{ responsive_breakpoints|json_encode }}"
+    data-kreyu--data-table-bundle--responsive-current-breakpoint-value="{{ active_breakpoint|default('') }}"
 {% endblock %}
 
 {% block table_head_row %}
@@ -34,7 +38,9 @@
 
         {% for column_header in header_row %}
             {% set col_visible_from = column_header.vars.visible_from %}
-            {% if col_visible_from is same as(false) or (col_visible_from is not same as(false) and not device.isAtLeast(col_visible_from)) %}
+            {% if col_visible_from is same as(false) %}
+                {% set has_hidden_columns = true %}
+            {% elseif col_visible_from is not null and active_breakpoint is not null and not breakpoint_resolver.isVisible(active_breakpoint, col_visible_from) %}
                 {% set has_hidden_columns = true %}
             {% endif %}
         {% endfor %}
@@ -45,7 +51,7 @@
 
         {% for column_header in header_row %}
             {% set col_visible_from = column_header.vars.visible_from %}
-            {% if col_visible_from is not same as(false) and device.isAtLeast(col_visible_from) %}
+            {% if col_visible_from is not same as(false) and (col_visible_from is null or active_breakpoint is null or breakpoint_resolver.isVisible(active_breakpoint, col_visible_from)) %}
                 {{- data_table_column_header(column_header) -}}
             {% endif %}
         {% endfor %}
@@ -58,7 +64,9 @@
 
     {% for column_name, column_value in value_row %}
         {% set col_visible_from = column_value.vars.visible_from %}
-        {% if col_visible_from is same as(false) or (col_visible_from is not same as(false) and not device.isAtLeast(col_visible_from)) %}
+        {% if col_visible_from is same as(false) %}
+            {% set hidden_columns = hidden_columns|merge({ (column_name): column_value }) %}
+        {% elseif col_visible_from is not null and active_breakpoint is not null and not breakpoint_resolver.isVisible(active_breakpoint, col_visible_from) %}
             {% set hidden_columns = hidden_columns|merge({ (column_name): column_value }) %}
         {% else %}
             {% set visible_columns = visible_columns|merge({ (column_name): column_value }) %}

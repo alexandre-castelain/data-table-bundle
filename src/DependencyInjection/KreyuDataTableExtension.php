@@ -68,9 +68,12 @@ class KreyuDataTableExtension extends Extension implements PrependExtensionInter
             $container->registerForAutoconfiguration($interface)->addTag($tag);
         }
 
+        $defaults = $config['defaults'];
+        $defaults['responsive'] = $config['responsive'];
+
         $container
             ->getDefinition('kreyu_data_table.type.data_table')
-            ->setArgument('$defaults', $config['defaults'])
+            ->setArgument('$defaults', $defaults)
         ;
 
         if ($container->getParameter('kernel.debug')) {
