@@ -1,4 +1,5 @@
 import { Controller } from '@hotwired/stimulus'
+import '../styles/responsive.css'
 
 /* stimulusFetch: 'eager' */
 export default class extends Controller {

@@ -1,3 +1,7 @@
+.kreyu-dt-responsive-pending {
+    visibility: hidden;
+}
+
 .kreyu-dt-collapsible-row td {
     padding: 0 !important;
 }

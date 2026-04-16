@@ -113,6 +113,7 @@ class KreyuDataTableExtension extends Extension implements PrependExtensionInter
                 'asset_mapper' => [
                     'paths' => [
                         __DIR__.'/../../assets/controllers' => '@kreyu/data-table-bundle',
+                        __DIR__.'/../../assets/styles' => '@kreyu/data-table-bundle-styles',
                     ],
                 ],
             ]);

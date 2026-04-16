@@ -154,10 +154,11 @@ class HttpFoundationRequestHandlerDeviceDetectionTest extends TestCase
         $config->method('isExportingEnabled')->willReturn(false);
         $config->method('getOption')
             ->willReturnCallback(function (string $name) {
-                if ($name === 'responsive_breakpoints') {
-                    return self::DEFAULT_BREAKPOINTS;
-                }
-                return null;
+                return match ($name) {
+                    'responsive_enabled' => true,
+                    'responsive_breakpoints' => self::DEFAULT_BREAKPOINTS,
+                    default => null,
+                };
             });
 
         $dataTable = $this->createMock(DataTableInterface::class);
