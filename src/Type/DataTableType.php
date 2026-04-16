@@ -148,6 +148,20 @@ final class DataTableType implements DataTableTypeInterface
             }
 
             $view->vars['responsive_hidden_columns'] = $hiddenColumns;
+        } else {
+            foreach ($columns as $column) {
+                $visibleFrom = $column->getConfig()->getOption('visible_from');
+
+                if (null !== $visibleFrom) {
+                    throw new InvalidArgumentException(sprintf(
+                        'Column "%s" has visible_from set to "%s", but the data table "%s" has responsive disabled. '
+                        . 'Either enable the responsive feature or remove the visible_from option from this column.',
+                        $column->getName(),
+                        is_string($visibleFrom) ? $visibleFrom : var_export($visibleFrom, true),
+                        $dataTable->getName(),
+                    ));
+                }
+            }
         }
 
         $view->headerRow = $this->createHeaderRowView($view, $dataTable, $visibleColumns);

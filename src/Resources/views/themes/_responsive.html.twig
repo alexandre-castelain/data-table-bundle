@@ -4,17 +4,18 @@
 {# Provides collapsible rows for columns hidden at the current breakpoint #}
 
 {% block kreyu_data_table %}
-    {% set stimulus_controllers = ['kreyu--data-table-bundle--state', 'kreyu--data-table-bundle--responsive'] %}
+    {% set stimulus_controllers = ['kreyu--data-table-bundle--state'] %}
+
+    {% if responsive_enabled|default(false) %}
+        {% set stimulus_controllers = stimulus_controllers|merge(['kreyu--data-table-bundle--responsive']) %}
+    {% endif %}
 
     {% if has_batch_actions %}
         {% set stimulus_controllers = stimulus_controllers|merge(['kreyu--data-table-bundle--batch']) %}
     {% endif %}
 
     <turbo-frame id="kreyu_data_table_{{ name }}" target="_top">
-        <style>
-            .kreyu-dt-responsive-pending { visibility: hidden; }
-        </style>
-        <div class="kreyu-dt-responsive-pending" {{ block('kreyu_data_table_attributes', theme) }}>
+        <div{% if responsive_enabled|default(false) %} class="kreyu-dt-responsive-pending"{% endif %} {{ block('kreyu_data_table_attributes', theme) }}>
             {{ block('action_bar', theme) }}
             {{ block('table', theme) }}
 
@@ -28,8 +29,10 @@
 {% block kreyu_data_table_attributes %}
     data-controller="{{ stimulus_controllers|join(' ') }}"
     data-kreyu--data-table-bundle--state-url-query-parameters-value="{{ url_query_parameters|default({})|json_encode(constant('JSON_FORCE_OBJECT')) }}"
+    {% if responsive_enabled|default(false) %}
     data-kreyu--data-table-bundle--responsive-breakpoints-value="{{ responsive_breakpoints|json_encode }}"
     data-kreyu--data-table-bundle--responsive-current-breakpoint-value="{{ active_breakpoint|default('') }}"
+    {% endif %}
 {% endblock %}
 
 {% block table_head_row %}
