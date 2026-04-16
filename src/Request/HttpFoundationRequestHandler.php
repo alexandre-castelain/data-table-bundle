@@ -155,19 +155,23 @@ class HttpFoundationRequestHandler implements RequestHandlerInterface
 
     private function detectDevice(DataTableInterface $dataTable, Request $request): void
     {
+        $breakpoints = $dataTable->getConfig()->getOption('responsive_breakpoints') ?? [];
+
+        if ([] === $breakpoints) {
+            return;
+        }
+
+        $resolver = new BreakpointResolver($breakpoints);
         $breakpoint = $request->query->get('_breakpoint');
 
-        if (null !== $breakpoint) {
+        if (null !== $breakpoint && $resolver->has($breakpoint)) {
             $dataTable->setActiveBreakpoint($breakpoint);
 
             return;
         }
 
         if (null !== $this->deviceDetector) {
-            $device = $this->deviceDetector->detect($request);
-            $breakpoints = $dataTable->getConfig()->getOption('responsive_breakpoints') ?? [];
-            $resolver = new BreakpointResolver($breakpoints);
-            $dataTable->setActiveBreakpoint($resolver->resolveUaFallback($device));
+            $dataTable->setActiveBreakpoint($resolver->resolveUaFallback($this->deviceDetector->detect($request)));
         }
     }
 

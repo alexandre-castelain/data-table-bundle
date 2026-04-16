@@ -34,24 +34,12 @@
 
 {% block table_head_row %}
     <tr>
-        {% set has_hidden_columns = false %}
-
-        {% for column_header in header_row %}
-            {% set col_visible_from = column_header.vars.visible_from %}
-            {% if col_visible_from is same as(false) %}
-                {% set has_hidden_columns = true %}
-            {% elseif col_visible_from is not null and active_breakpoint is not null and not breakpoint_resolver.isVisible(active_breakpoint, col_visible_from) %}
-                {% set has_hidden_columns = true %}
-            {% endif %}
-        {% endfor %}
-
-        {% if has_hidden_columns %}
+        {% if responsive_hidden_columns|default([])|length > 0 %}
             {{ block('responsive_toggle_header', theme) }}
         {% endif %}
 
         {% for column_header in header_row %}
-            {% set col_visible_from = column_header.vars.visible_from %}
-            {% if col_visible_from is not same as(false) and (col_visible_from is null or active_breakpoint is null or breakpoint_resolver.isVisible(active_breakpoint, col_visible_from)) %}
+            {% if column_header.vars.name not in responsive_hidden_columns|default([]) %}
                 {{- data_table_column_header(column_header) -}}
             {% endif %}
         {% endfor %}
@@ -61,12 +49,10 @@
 {% block table_body_value_row %}
     {% set visible_columns = [] %}
     {% set hidden_columns = [] %}
+    {% set row_index = value_row.vars.row.index|default(loop.index0) %}
 
     {% for column_name, column_value in value_row %}
-        {% set col_visible_from = column_value.vars.visible_from %}
-        {% if col_visible_from is same as(false) %}
-            {% set hidden_columns = hidden_columns|merge({ (column_name): column_value }) %}
-        {% elseif col_visible_from is not null and active_breakpoint is not null and not breakpoint_resolver.isVisible(active_breakpoint, col_visible_from) %}
+        {% if column_name in responsive_hidden_columns|default([]) %}
             {% set hidden_columns = hidden_columns|merge({ (column_name): column_value }) %}
         {% else %}
             {% set visible_columns = visible_columns|merge({ (column_name): column_value }) %}
@@ -99,7 +85,7 @@
             class="kreyu-dt-toggle-btn"
             aria-expanded="false"
             aria-label="{{ 'Toggle details'|trans }}"
-            data-row-index="{{ loop.index }}"
+            data-row-index="{{ row_index }}"
             data-action="click->kreyu--data-table-bundle--responsive#toggle"
             data-kreyu--data-table-bundle--responsive-target="toggleButton"
         >
@@ -112,7 +98,7 @@
     <tr
         class="kreyu-dt-collapsible-row"
         hidden
-        data-row-index="{{ loop.index }}"
+        data-row-index="{{ row_index }}"
         data-kreyu--data-table-bundle--responsive-target="collapsibleRow"
     >
         <td colspan="{{ visible_columns|length + 1 }}">

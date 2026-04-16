@@ -6,12 +6,16 @@ namespace Kreyu\Bundle\DataTableBundle\Responsive;
 
 class BreakpointResolver
 {
+    /** @var array<string, int> */
+    private readonly array $breakpoints;
+
     /**
-     * @param array<string, int> $breakpoints Associative array of name => max width, sorted ascending
+     * @param array<string, int> $breakpoints Associative array of name => max width
      */
-    public function __construct(
-        private readonly array $breakpoints,
-    ) {
+    public function __construct(array $breakpoints)
+    {
+        asort($breakpoints);
+        $this->breakpoints = $breakpoints;
     }
 
     /**
@@ -32,9 +36,6 @@ class BreakpointResolver
 
     /**
      * Checks whether a column is visible at the given active breakpoint.
-     *
-     * A column with $minimumBreakpoint is visible when the active breakpoint
-     * is at the same position or higher in the configured breakpoints order.
      */
     public function isVisible(string $activeBreakpoint, string $minimumBreakpoint): bool
     {
@@ -42,11 +43,19 @@ class BreakpointResolver
         $activeIndex = array_search($activeBreakpoint, $names, true);
         $minimumIndex = array_search($minimumBreakpoint, $names, true);
 
-        if (false === $minimumIndex) {
-            return true;
+        if (false === $activeIndex || false === $minimumIndex) {
+            return false;
         }
 
         return $activeIndex >= $minimumIndex;
+    }
+
+    /**
+     * Returns whether the given breakpoint name exists in the configuration.
+     */
+    public function has(string $name): bool
+    {
+        return isset($this->breakpoints[$name]);
     }
 
     /**

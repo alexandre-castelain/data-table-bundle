@@ -6,7 +6,6 @@ export default class extends Controller {
 
     static values = {
         breakpoints: { type: Object, default: {} },
-        parameterName: { type: String, default: '_breakpoint' },
         currentBreakpoint: { type: String, default: '' },
     }
 
@@ -117,7 +116,7 @@ export default class extends Controller {
 
         const baseUrl = frame.getAttribute('src') || window.location.href
         const url = new URL(baseUrl, window.location.origin)
-        url.searchParams.set(this.parameterNameValue, breakpoint)
+        url.searchParams.set('_breakpoint', breakpoint)
 
         frame.src = url.toString()
     }
