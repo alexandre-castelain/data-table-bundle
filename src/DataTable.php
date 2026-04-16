@@ -41,6 +41,7 @@ use Kreyu\Bundle\DataTableBundle\Personalization\PersonalizationData;
 use Kreyu\Bundle\DataTableBundle\Query\ProxyQueryInterface;
 use Kreyu\Bundle\DataTableBundle\Query\ResultSet;
 use Kreyu\Bundle\DataTableBundle\Query\ResultSetInterface;
+use Kreyu\Bundle\DataTableBundle\Responsive\Device;
 use Kreyu\Bundle\DataTableBundle\Sorting\SortingData;
 use Symfony\Component\Form\FormBuilderInterface;
 
@@ -122,6 +123,7 @@ class DataTable implements DataTableInterface
     private bool $exporting = false;
     private ?string $turboFrameId = null;
     private ?string $requestedColumnVisibilityGroup = null;
+    private Device $device = Device::Desktop;
 
     public function __construct(
         private ProxyQueryInterface $query,
@@ -931,6 +933,18 @@ class DataTable implements DataTableInterface
     public function getRequestedColumnVisibilityGroup(): ?string
     {
         return $this->requestedColumnVisibilityGroup;
+    }
+
+    public function getDevice(): Device
+    {
+        return $this->device;
+    }
+
+    public function setDevice(Device $device): static
+    {
+        $this->device = $device;
+
+        return $this;
     }
 
     private function dispatch(string $eventName, DataTableEvent $event): void

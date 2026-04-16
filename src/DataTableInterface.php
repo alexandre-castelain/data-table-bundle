@@ -25,6 +25,7 @@ use Kreyu\Bundle\DataTableBundle\Pagination\PaginationData;
 use Kreyu\Bundle\DataTableBundle\Pagination\PaginationInterface;
 use Kreyu\Bundle\DataTableBundle\Personalization\PersonalizationData;
 use Kreyu\Bundle\DataTableBundle\Query\ProxyQueryInterface;
+use Kreyu\Bundle\DataTableBundle\Responsive\Device;
 use Kreyu\Bundle\DataTableBundle\Sorting\SortingData;
 use Symfony\Component\Form\FormBuilderInterface;
 
@@ -231,4 +232,8 @@ interface DataTableInterface
     public function getColumnVisibilityGroups(): array;
 
     public function addColumnVisibilityGroup(ColumnVisibilityGroupInterface $columnVisibilityGroup): static;
+
+    public function getDevice(): Device;
+
+    public function setDevice(Device $device): static;
 }

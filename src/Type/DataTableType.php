@@ -25,6 +25,7 @@ use Kreyu\Bundle\DataTableBundle\Pagination\PaginationView;
 use Kreyu\Bundle\DataTableBundle\Persistence\PersistenceAdapterInterface;
 use Kreyu\Bundle\DataTableBundle\Persistence\PersistenceSubjectProviderInterface;
 use Kreyu\Bundle\DataTableBundle\Request\RequestHandlerInterface;
+use Kreyu\Bundle\DataTableBundle\Responsive\Device;
 use Kreyu\Bundle\DataTableBundle\RowIterator;
 use Kreyu\Bundle\DataTableBundle\Util\FormUtil;
 use Kreyu\Bundle\DataTableBundle\ValueRowView;
@@ -114,6 +115,7 @@ final class DataTableType implements DataTableTypeInterface
             'per_page_choices' => $options['per_page_choices'],
             'is_request_from_turbo_frame' => $dataTable->isRequestFromTurboFrame(),
             'is_async' => $dataTable->getConfig()->isAsync(),
+            'device' => $dataTable->getDevice(),
         ]);
 
         $view->headerRow = $this->createHeaderRowView($view, $dataTable, $visibleColumns);

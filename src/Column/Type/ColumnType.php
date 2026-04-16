@@ -8,6 +8,7 @@ use Kreyu\Bundle\DataTableBundle\Column\ColumnBuilderInterface;
 use Kreyu\Bundle\DataTableBundle\Column\ColumnHeaderView;
 use Kreyu\Bundle\DataTableBundle\Column\ColumnInterface;
 use Kreyu\Bundle\DataTableBundle\Column\ColumnValueView;
+use Kreyu\Bundle\DataTableBundle\Responsive\Device;
 use Kreyu\Bundle\DataTableBundle\Util\StringUtil;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\PropertyAccess\PropertyAccess;
@@ -73,6 +74,7 @@ final class ColumnType implements ColumnTypeInterface
             'sort_direction' => $sortColumnData?->getDirection(),
             'sortable' => $column->getConfig()->isSortable(),
             'export' => $column->getConfig()->isExportable(),
+            'visible_from' => $options['visible_from'],
         ]);
     }
 
@@ -120,6 +122,7 @@ final class ColumnType implements ColumnTypeInterface
             'translation_domain' => $translationDomain,
             'translation_parameters' => $translationParameters ?? [],
             'attr' => $attr,
+            'visible_from' => $options['visible_from'],
         ]);
     }
 
@@ -335,6 +338,13 @@ final class ColumnType implements ColumnTypeInterface
             ->default(null)
             ->allowedTypes('null', 'string', 'array')
             ->info('Defines the visibility groups of a column.')
+        ;
+
+        $resolver->define('visible_from')
+            ->default(Device::Phone)
+            ->allowedTypes(Device::class, 'bool')
+            ->allowedValues(static fn ($value) => $value !== true)
+            ->info('Minimum device from which the column is directly visible (cascade: Phone < Tablet < Desktop). Device::Phone = always visible, Device::Tablet = tablet+desktop, Device::Desktop = desktop only, false = always in collapsible row.')
         ;
     }
 
