@@ -12,6 +12,7 @@ use Kreyu\Bundle\DataTableBundle\Column\ColumnInterface;
 use Kreyu\Bundle\DataTableBundle\DataTableBuilderInterface;
 use Kreyu\Bundle\DataTableBundle\DataTableInterface;
 use Kreyu\Bundle\DataTableBundle\DataTableView;
+use Kreyu\Bundle\DataTableBundle\Exception\InvalidArgumentException;
 use Kreyu\Bundle\DataTableBundle\Exporter\ExporterFactoryInterface;
 use Kreyu\Bundle\DataTableBundle\Filter\FilterData;
 use Kreyu\Bundle\DataTableBundle\Filter\FilterFactoryInterface;
@@ -22,7 +23,7 @@ use Kreyu\Bundle\DataTableBundle\Pagination\PaginationView;
 use Kreyu\Bundle\DataTableBundle\Persistence\PersistenceAdapterInterface;
 use Kreyu\Bundle\DataTableBundle\Persistence\PersistenceSubjectProviderInterface;
 use Kreyu\Bundle\DataTableBundle\Request\RequestHandlerInterface;
-use Kreyu\Bundle\DataTableBundle\Responsive\Device;
+use Kreyu\Bundle\DataTableBundle\Responsive\BreakpointResolver;
 use Kreyu\Bundle\DataTableBundle\RowIterator;
 use Kreyu\Bundle\DataTableBundle\Util\FormUtil;
 use Kreyu\Bundle\DataTableBundle\ValueRowView;
@@ -108,8 +109,26 @@ final class DataTableType implements DataTableTypeInterface
             'sorting_clearable' => $dataTable->getConfig()->isSortingClearable(),
             'has_batch_actions' => !empty($dataTable->getBatchActions()),
             'per_page_choices' => $options['per_page_choices'],
-            'device' => $dataTable->getDevice(),
+            'responsive_breakpoints' => $options['responsive_breakpoints'],
+            'active_breakpoint' => $dataTable->getActiveBreakpoint(),
+            'breakpoint_resolver' => new BreakpointResolver($options['responsive_breakpoints']),
         ]);
+
+        $breakpointNames = array_keys($options['responsive_breakpoints']);
+
+        foreach ($columns as $column) {
+            $visibleFrom = $column->getConfig()->getOption('visible_from');
+
+            if (is_string($visibleFrom) && !in_array($visibleFrom, $breakpointNames, true)) {
+                throw new InvalidArgumentException(sprintf(
+                    'Column "%s" has visible_from "%s", but the data table "%s" only defines breakpoints: %s.',
+                    $column->getName(),
+                    $visibleFrom,
+                    $dataTable->getName(),
+                    implode(', ', $breakpointNames),
+                ));
+            }
+        }
 
         $view->headerRow = $this->createHeaderRowView($view, $dataTable, $visibleColumns);
         $view->nonPersonalizedHeaderRow = $this->createHeaderRowView($view, $dataTable, $columns);
@@ -188,6 +207,12 @@ final class DataTableType implements DataTableTypeInterface
                 'personalization_form_factory' => $this->defaults['personalization']['form_factory'] ?? null,
                 'exporting_enabled' => $this->defaults['exporting']['enabled'] ?? false,
                 'exporting_form_factory' => $this->defaults['exporting']['form_factory'] ?? null,
+                'responsive_breakpoints' => $this->defaults['responsive']['breakpoints'] ?? [
+                    'sm' => 576,
+                    'md' => 768,
+                    'lg' => 992,
+                    'xl' => 1200,
+                ],
             ])
             ->setAllowedTypes('title', ['null', 'string', TranslatableInterface::class])
             ->setAllowedTypes('title_translation_parameters', ['array'])
@@ -219,6 +244,7 @@ final class DataTableType implements DataTableTypeInterface
             ->setAllowedTypes('personalization_form_factory', ['null', FormFactoryInterface::class])
             ->setAllowedTypes('exporting_enabled', 'bool')
             ->setAllowedTypes('exporting_form_factory', ['null', FormFactoryInterface::class])
+            ->setAllowedTypes('responsive_breakpoints', 'array')
         ;
     }
 

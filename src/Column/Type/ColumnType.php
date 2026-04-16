@@ -8,7 +8,6 @@ use Kreyu\Bundle\DataTableBundle\Column\ColumnBuilderInterface;
 use Kreyu\Bundle\DataTableBundle\Column\ColumnHeaderView;
 use Kreyu\Bundle\DataTableBundle\Column\ColumnInterface;
 use Kreyu\Bundle\DataTableBundle\Column\ColumnValueView;
-use Kreyu\Bundle\DataTableBundle\Responsive\Device;
 use Kreyu\Bundle\DataTableBundle\Util\StringUtil;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\PropertyAccess\PropertyAccess;
@@ -335,10 +334,10 @@ final class ColumnType implements ColumnTypeInterface
         ;
 
         $resolver->define('visible_from')
-            ->default(Device::Phone)
-            ->allowedTypes(Device::class, 'bool')
+            ->default(null)
+            ->allowedTypes('null', 'string', 'bool')
             ->allowedValues(static fn ($value) => $value !== true)
-            ->info('Minimum device from which the column is directly visible (cascade: Phone < Tablet < Desktop). Device::Phone = always visible, Device::Tablet = tablet+desktop, Device::Desktop = desktop only, false = always in collapsible row.')
+            ->info('Minimum breakpoint from which the column is directly visible. null = always visible, string (e.g. "md") = visible from that breakpoint, false = always in collapsible row.')
         ;
     }
 

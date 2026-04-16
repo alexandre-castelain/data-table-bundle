@@ -14,7 +14,14 @@ use Symfony\Component\HttpFoundation\Request;
 
 class HttpFoundationRequestHandlerDeviceDetectionTest extends TestCase
 {
-    public function testDeviceParameterOverridesUserAgent(): void
+    private const DEFAULT_BREAKPOINTS = [
+        'sm' => 576,
+        'md' => 768,
+        'lg' => 992,
+        'xl' => 1200,
+    ];
+
+    public function testBreakpointParameterOverridesUserAgent(): void
     {
         $detector = $this->createMock(DeviceDetectorInterface::class);
         $detector->expects($this->never())->method('detect');
@@ -23,13 +30,13 @@ class HttpFoundationRequestHandlerDeviceDetectionTest extends TestCase
 
         $dataTable = $this->createDataTableMock();
         $dataTable->expects($this->once())
-            ->method('setDevice')
-            ->with(Device::Phone);
+            ->method('setActiveBreakpoint')
+            ->with('sm');
 
-        $handler->handle($dataTable, $this->createRequest(['_device' => 'phone']));
+        $handler->handle($dataTable, $this->createRequest(['_breakpoint' => 'sm']));
     }
 
-    public function testFallsBackToUserAgentWhenNoDeviceParameter(): void
+    public function testFallsBackToUserAgentWhenNoBreakpointParameter(): void
     {
         $detector = $this->createMock(DeviceDetectorInterface::class);
         $detector->expects($this->once())
@@ -40,13 +47,30 @@ class HttpFoundationRequestHandlerDeviceDetectionTest extends TestCase
 
         $dataTable = $this->createDataTableMock();
         $dataTable->expects($this->once())
-            ->method('setDevice')
-            ->with(Device::Tablet);
+            ->method('setActiveBreakpoint')
+            ->with('lg'); // Tablet → median upper breakpoint (lg for 4 breakpoints)
 
         $handler->handle($dataTable, $this->createRequest());
     }
 
-    public function testFallsBackToUserAgentWhenDeviceParameterIsInvalid(): void
+    public function testFallsBackToUserAgentPhoneGivesSmallestBreakpoint(): void
+    {
+        $detector = $this->createMock(DeviceDetectorInterface::class);
+        $detector->expects($this->once())
+            ->method('detect')
+            ->willReturn(Device::Phone);
+
+        $handler = new HttpFoundationRequestHandler($detector);
+
+        $dataTable = $this->createDataTableMock();
+        $dataTable->expects($this->once())
+            ->method('setActiveBreakpoint')
+            ->with('sm');
+
+        $handler->handle($dataTable, $this->createRequest());
+    }
+
+    public function testFallsBackToUserAgentDesktopGivesLargestBreakpoint(): void
     {
         $detector = $this->createMock(DeviceDetectorInterface::class);
         $detector->expects($this->once())
@@ -57,10 +81,10 @@ class HttpFoundationRequestHandlerDeviceDetectionTest extends TestCase
 
         $dataTable = $this->createDataTableMock();
         $dataTable->expects($this->once())
-            ->method('setDevice')
-            ->with(Device::Desktop);
+            ->method('setActiveBreakpoint')
+            ->with('xl'); // Desktop → largest breakpoint
 
-        $handler->handle($dataTable, $this->createRequest(['_device' => 'invalid']));
+        $handler->handle($dataTable, $this->createRequest());
     }
 
     public function testNoDeviceDetectionWithoutDetector(): void
@@ -68,35 +92,21 @@ class HttpFoundationRequestHandlerDeviceDetectionTest extends TestCase
         $handler = new HttpFoundationRequestHandler();
 
         $dataTable = $this->createDataTableMock();
-        $dataTable->expects($this->never())->method('setDevice');
+        $dataTable->expects($this->never())->method('setActiveBreakpoint');
 
         $handler->handle($dataTable, $this->createRequest());
     }
 
-    public function testDeviceParameterWorksWithoutDetector(): void
+    public function testBreakpointParameterWorksWithoutDetector(): void
     {
         $handler = new HttpFoundationRequestHandler();
 
         $dataTable = $this->createDataTableMock();
         $dataTable->expects($this->once())
-            ->method('setDevice')
-            ->with(Device::Tablet);
+            ->method('setActiveBreakpoint')
+            ->with('md');
 
-        $handler->handle($dataTable, $this->createRequest(['_device' => 'tablet']));
-    }
-
-    public function testAllDeviceParameterValues(): void
-    {
-        $handler = new HttpFoundationRequestHandler();
-
-        foreach (Device::cases() as $device) {
-            $dataTable = $this->createDataTableMock();
-            $dataTable->expects($this->once())
-                ->method('setDevice')
-                ->with($device);
-
-            $handler->handle($dataTable, $this->createRequest(['_device' => $device->value]));
-        }
+        $handler->handle($dataTable, $this->createRequest(['_breakpoint' => 'md']));
     }
 
     public function testNullRequestDoesNothing(): void
@@ -104,7 +114,7 @@ class HttpFoundationRequestHandlerDeviceDetectionTest extends TestCase
         $handler = new HttpFoundationRequestHandler();
 
         $dataTable = $this->createDataTableMock();
-        $dataTable->expects($this->never())->method('setDevice');
+        $dataTable->expects($this->never())->method('setActiveBreakpoint');
 
         $handler->handle($dataTable, null);
     }
@@ -125,6 +135,13 @@ class HttpFoundationRequestHandlerDeviceDetectionTest extends TestCase
         $config->method('isPaginationEnabled')->willReturn(false);
         $config->method('isPersonalizationEnabled')->willReturn(false);
         $config->method('isExportingEnabled')->willReturn(false);
+        $config->method('getOption')
+            ->willReturnCallback(function (string $name) {
+                if ($name === 'responsive_breakpoints') {
+                    return self::DEFAULT_BREAKPOINTS;
+                }
+                return null;
+            });
 
         $dataTable = $this->createMock(DataTableInterface::class);
         $dataTable->method('getConfig')->willReturn($config);
