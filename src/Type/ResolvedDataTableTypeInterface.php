@@ -36,6 +36,11 @@ interface ResolvedDataTableTypeInterface
     /**
      * @param array<string, mixed> $options
      */
+    public function createQuery(array $options): mixed;
+
+    /**
+     * @param array<string, mixed> $options
+     */
     public function buildDataTable(DataTableBuilderInterface $builder, array $options): void;
 
     /**

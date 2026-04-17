@@ -60,6 +60,11 @@ class ResolvedDataTableTypeDataCollectorProxy implements ResolvedDataTableTypeIn
         return $this->proxiedType->createExportView($dataTable);
     }
 
+    public function createQuery(array $options): mixed
+    {
+        return $this->proxiedType->createQuery($options);
+    }
+
     public function buildDataTable(DataTableBuilderInterface $builder, array $options): void
     {
         $this->proxiedType->buildDataTable($builder, $options);
