@@ -147,6 +147,8 @@ class DataTableTest extends DataTableIntegrationTestCase
     public function testGetVisibleColumnsWithoutRequestedGroupShowsAll()
     {
         $dataTable = $this->createDataTableBuilder()
+            ->addColumnVisibilityGroup('foo')
+            ->addColumnVisibilityGroup('bar')
             ->addColumn('always', options: ['priority' => 3])
             ->addColumn('foo_only', options: ['priority' => 2, 'column_visibility_groups' => ['foo']])
             ->addColumn('bar_only', options: ['priority' => 1, 'column_visibility_groups' => ['bar']])
@@ -160,6 +162,8 @@ class DataTableTest extends DataTableIntegrationTestCase
     public function testGetVisibleColumnsFiltersByRequestedGroup()
     {
         $dataTable = $this->createDataTableBuilder()
+            ->addColumnVisibilityGroup('foo')
+            ->addColumnVisibilityGroup('bar')
             ->addColumn('always', options: ['priority' => 3])
             ->addColumn('foo_only', options: ['priority' => 2, 'column_visibility_groups' => ['foo']])
             ->addColumn('bar_only', options: ['priority' => 1, 'column_visibility_groups' => ['bar']])
@@ -175,6 +179,8 @@ class DataTableTest extends DataTableIntegrationTestCase
     public function testGetVisibleColumnsSupportsMultipleGroupsPerColumn()
     {
         $dataTable = $this->createDataTableBuilder()
+            ->addColumnVisibilityGroup('foo')
+            ->addColumnVisibilityGroup('bar')
             ->addColumn('shared', options: ['column_visibility_groups' => ['foo', 'bar']])
             ->addColumn('foo_only', options: ['column_visibility_groups' => ['foo']])
             ->getDataTable();
@@ -187,6 +193,7 @@ class DataTableTest extends DataTableIntegrationTestCase
     public function testPersonalizationHiddenWinsOverVisibilityGroup()
     {
         $dataTable = $this->createDataTableBuilder(['personalization_enabled' => true])
+            ->addColumnVisibilityGroup('foo')
             ->addColumn('foo_only', options: ['column_visibility_groups' => ['foo']])
             ->getDataTable();
 
@@ -198,6 +205,18 @@ class DataTableTest extends DataTableIntegrationTestCase
         ]));
 
         $this->assertEmpty($dataTable->getVisibleColumns());
+    }
+
+    public function testGetDataTableThrowsWhenColumnReferencesUnknownGroup()
+    {
+        $builder = $this->createDataTableBuilder()
+            ->addColumnVisibilityGroup('foo')
+            ->addColumn('bad', options: ['column_visibility_groups' => ['typo']]);
+
+        $this->expectException(\Kreyu\Bundle\DataTableBundle\Exception\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Column "bad" references the column visibility group "typo"');
+
+        $builder->getDataTable();
     }
 
     public function testGetHiddenColumns()

@@ -967,6 +967,16 @@ class DataTableBuilder extends DataTableConfigBuilder implements DataTableBuilde
         if (count($defaults) > 1) {
             throw new InvalidArgumentException(sprintf('Only one column visibility group can be marked as default, but %d were found: "%s".', count($defaults), implode('", "', array_keys($defaults))));
         }
+
+        foreach ($this->columns as $column) {
+            $referenced = (array) $column->getColumnConfig()->getOption('column_visibility_groups');
+
+            foreach ($referenced as $groupName) {
+                if (!isset($this->columnVisibilityGroups[$groupName])) {
+                    throw new InvalidArgumentException(sprintf('Column "%s" references the column visibility group "%s", but no such group has been defined on the data table. Available groups: %s.', $column->getName(), $groupName, $this->columnVisibilityGroups ? '"'.implode('", "', array_keys($this->columnVisibilityGroups)).'"' : 'none'));
+                }
+            }
+        }
     }
 
     private function resolveColumnVisibilityGroup(string $name): ColumnVisibilityGroupInterface
