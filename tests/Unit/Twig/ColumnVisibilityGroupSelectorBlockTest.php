@@ -12,11 +12,14 @@ use Kreyu\Bundle\DataTableBundle\Pagination\PaginationUrlGeneratorInterface;
 use Kreyu\Bundle\DataTableBundle\Twig\DataTableExtension;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Twig\Extension\FormExtension;
-use Symfony\Bridge\Twig\Extension\TranslationExtension;
-use Symfony\Component\Translation\Translator;
 use Twig\Environment;
+use Twig\Extension\AbstractExtension;
 use Twig\Extra\Intl\IntlExtension;
 use Twig\Loader\FilesystemLoader;
+use Twig\Node\Node;
+use Twig\Token;
+use Twig\TokenParser\AbstractTokenParser;
+use Twig\TwigFilter;
 
 /**
  * Renders the real base.html.twig and asserts that the visibility group selector form
@@ -76,7 +79,13 @@ class ColumnVisibilityGroupSelectorBlockTest extends TestCase
     {
         $loader = new FilesystemLoader(__DIR__.'/../../../src/Resources/views/themes');
         $twig = new Environment($loader, ['strict_variables' => false]);
-        $twig->addExtension(new TranslationExtension(new Translator('en')));
+
+        // Avoid Symfony TranslationExtension: its TranslationDefaultDomainNodeVisitor is incompatible
+        // with the lowest supported Twig version (raises "EmptyNode cannot have children").
+        // A stub that no-ops `|trans` and `{% trans_default_domain %}` is enough for our purpose —
+        // we only render one block that doesn't translate anything.
+        $twig->addExtension(new NoOpTranslationExtension());
+
         $twig->addExtension(new FormExtension());
         $twig->addExtension(new IntlExtension());
         $twig->addExtension(new DataTableExtension(
@@ -100,5 +109,41 @@ class ColumnVisibilityGroupSelectorBlockTest extends TestCase
             'data_table' => $view,
             'theme' => $template,
         ]);
+    }
+}
+
+final class NoOpTranslationExtension extends AbstractExtension
+{
+    public function getFilters(): array
+    {
+        return [
+            new TwigFilter('trans', static fn (mixed $value) => $value),
+        ];
+    }
+
+    public function getTokenParsers(): array
+    {
+        return [new NoOpTransDefaultDomainTokenParser()];
+    }
+}
+
+final class NoOpTransDefaultDomainTokenParser extends AbstractTokenParser
+{
+    public function parse(Token $token): Node
+    {
+        $stream = $this->parser->getStream();
+
+        while (!$stream->test(Token::BLOCK_END_TYPE)) {
+            $stream->next();
+        }
+
+        $stream->expect(Token::BLOCK_END_TYPE);
+
+        return new Node([], [], $token->getLine());
+    }
+
+    public function getTag(): string
+    {
+        return 'trans_default_domain';
     }
 }
