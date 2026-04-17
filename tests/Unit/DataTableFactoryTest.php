@@ -85,11 +85,12 @@ class DataTableFactoryTest extends TestCase
 
     public function testBuildDataTableSeesQueryFromCreateQuery()
     {
-        $seen = null;
+        $spy = new \stdClass();
+        $spy->seen = null;
 
-        $type = new class($seen) extends AbstractDataTableType {
+        $type = new class($spy) extends AbstractDataTableType {
             public function __construct(
-                private mixed &$seen,
+                private \stdClass $spy,
             ) {
             }
 
@@ -100,7 +101,7 @@ class DataTableFactoryTest extends TestCase
 
             public function buildDataTable(DataTableBuilderInterface $builder, array $options): void
             {
-                $this->seen = $builder->getQuery();
+                $this->spy->seen = $builder->getQuery();
             }
         };
 
@@ -109,7 +110,7 @@ class DataTableFactoryTest extends TestCase
             proxyQueryFactories: [new CustomProxyQueryFactory()],
         )->createNamedBuilder('name', $type::class);
 
-        $this->assertInstanceOf(CustomProxyQuery::class, $seen);
+        $this->assertInstanceOf(CustomProxyQuery::class, $spy->seen);
     }
 
     public function testCreateBuilderUsesDataTableName()
