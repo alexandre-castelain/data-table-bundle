@@ -144,6 +144,62 @@ class DataTableTest extends DataTableIntegrationTestCase
         $this->assertEquals(['fifth', 'third', 'first'], $columns);
     }
 
+    public function testGetVisibleColumnsWithoutRequestedGroupShowsAll()
+    {
+        $dataTable = $this->createDataTableBuilder()
+            ->addColumn('always', options: ['priority' => 3])
+            ->addColumn('foo_only', options: ['priority' => 2, 'column_visibility_groups' => ['foo']])
+            ->addColumn('bar_only', options: ['priority' => 1, 'column_visibility_groups' => ['bar']])
+            ->getDataTable();
+
+        $columns = array_keys($dataTable->getVisibleColumns());
+
+        $this->assertEquals(['always', 'foo_only', 'bar_only'], $columns);
+    }
+
+    public function testGetVisibleColumnsFiltersByRequestedGroup()
+    {
+        $dataTable = $this->createDataTableBuilder()
+            ->addColumn('always', options: ['priority' => 3])
+            ->addColumn('foo_only', options: ['priority' => 2, 'column_visibility_groups' => ['foo']])
+            ->addColumn('bar_only', options: ['priority' => 1, 'column_visibility_groups' => ['bar']])
+            ->getDataTable();
+
+        $dataTable->setRequestedColumnVisibilityGroup('foo');
+
+        $columns = array_keys($dataTable->getVisibleColumns());
+
+        $this->assertEquals(['always', 'foo_only'], $columns);
+    }
+
+    public function testGetVisibleColumnsSupportsMultipleGroupsPerColumn()
+    {
+        $dataTable = $this->createDataTableBuilder()
+            ->addColumn('shared', options: ['column_visibility_groups' => ['foo', 'bar']])
+            ->addColumn('foo_only', options: ['column_visibility_groups' => ['foo']])
+            ->getDataTable();
+
+        $dataTable->setRequestedColumnVisibilityGroup('bar');
+
+        $this->assertEquals(['shared'], array_keys($dataTable->getVisibleColumns()));
+    }
+
+    public function testPersonalizationHiddenWinsOverVisibilityGroup()
+    {
+        $dataTable = $this->createDataTableBuilder(['personalization_enabled' => true])
+            ->addColumn('foo_only', options: ['column_visibility_groups' => ['foo']])
+            ->getDataTable();
+
+        $dataTable->setRequestedColumnVisibilityGroup('foo');
+        $dataTable->setPersonalizationData(PersonalizationData::fromArray([
+            'columns' => [
+                'foo_only' => ['visible' => false],
+            ],
+        ]));
+
+        $this->assertEmpty($dataTable->getVisibleColumns());
+    }
+
     public function testGetHiddenColumns()
     {
         $dataTable = $this->createDataTableBuilder()
